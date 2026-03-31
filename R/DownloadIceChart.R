@@ -4,7 +4,7 @@
 #' @param year Choose between "2006" to current year
 #' @return data.frame with dataname, URLs, date and version
 #' @export
-search_IceChart_files <- function(region = "Eastern_Arctic", year = "2024") {
+searchCISfiles <- function(region = "Eastern_Arctic", year = "2024") {
   url <- paste0("https://noaadata.apps.nsidc.org/NOAA/G02171/",
                 region, "/", year, "/")
   r <- httr::GET(url, httr::add_headers(`User-Agent` = "Mozilla/5.0"))
@@ -43,14 +43,14 @@ search_IceChart_files <- function(region = "Eastern_Arctic", year = "2024") {
 #' @param id_prefix Prefix for ice-polygon IDs (default: "poly")
 #' @return sf-object with ice chart polygons and unique IDs
 #' @export
-download_IceChart <- function(target_date = "2020-11-02",
+downloadCISIceChart <- function(target_date = "2020-11-02",
                                region     = "Eastern_Arctic",
                                cache_dir  = tempdir(),
                                id_prefix  = "poly") {
 
   target_date <- as.Date(target_date)
   year      <- format(target_date, "%Y")
-  files     <- search_IceChart_files(region, year)
+  files     <- searchCISfiles(region, year)
 
   match <- files[files$datum == target_date & files$standard, ]
 
