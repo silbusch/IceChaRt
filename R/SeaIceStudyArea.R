@@ -16,8 +16,9 @@
 #' the CRS of the vector using `terra::project()`.
 #'
 #' @export
+#To-Do: Need to describe function
 
-SeaIceStudyArea <- function(shp, tif, out_path = NULL) {
+SeaIceStudyArea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
   # Input validation
   if (!inherits(shp, "SpatVector")) {
     stop("'shp' must be a terra::SpatVector object. Load it with terra::vect().", call. = FALSE)
@@ -38,6 +39,19 @@ SeaIceStudyArea <- function(shp, tif, out_path = NULL) {
         "Supported formats: ", paste(supported_formats, collapse = ", "),
         call. = FALSE
       )
+    }
+  }
+
+  # land_mask validation
+  if (land_mask) {
+    if (!land_col %in% names(shp)) {
+      stop("Column '", land_col, "' not found in SpatVector. Available columns: ",
+           paste(names(shp), collapse = ", "), call. = FALSE)
+    }
+    land_polygons <- shp[shp[[land_col]] == land_val, ]
+    if (nrow(land_polygons) == 0) {
+      warning("No polygons with '", land_col, " == ", land_val, "' found. Land mask skipped.")
+      land_mask <- FALSE
     }
   }
 
@@ -64,13 +78,44 @@ SeaIceStudyArea <- function(shp, tif, out_path = NULL) {
   tif_ext     <- terra::ext(tif)
   shp_clipped <- terra::crop(shp, tif_ext)
 
+  #Land mask
+  if (land_mask) {
+    message("Applying land mask using '", land_col, " == ", land_val, "'...")
+    land_polygons <- terra::crop(land_polygons, tif_ext)
+    tif <- terra::mask(tif, land_polygons, inverse = TRUE)
+    message("Land mask applied.")
+  }
+
   if (!is.null(out_path)) {
     terra::writeVector(shp_clipped, out_path, overwrite = TRUE)
     message("Cropped vector written to: ", out_path)
   }
 
-  shp_clipped
+  #output with timestamp
+  if (save) {
+    save_dir <- if (!is.null(out_dir)) out_dir else file.path(getwd(), "IceChaRt_output")
+
+    if (!dir.exists(save_dir)) {
+      dir.create(save_dir, recursive = TRUE)
+      message("Created output directory: ", save_dir)
+    }
+    ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
+    shp_file <- if (!is.null(out_path)) {
+      out_path
+    } else {
+      file.path(save_dir, paste0("clipped_icechart_", ts, ".gpkg"))
+    }
+    terra::writeVector(shp_clipped, shp_file, overwrite = TRUE)
+    message("Vector written to: ", shp_file)
+
+    if (land_mask) {
+      tif_file <- file.path(save_dir, paste0("masked_raster_", ts, ".tif"))
+      terra::writeRaster(tif, tif_file, overwrite = TRUE)
+      message("Raster written to: ", tif_file)
+    }
+  }
+  list(
+    shp = shp_clipped,
+    tif = tif
+  )
 }
-
-
-# To-Do: Want to include optional land mask clipping with osmdata in this function too
