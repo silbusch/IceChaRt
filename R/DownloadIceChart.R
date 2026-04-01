@@ -94,7 +94,7 @@ downloadCISIceChart <- function(target_date = "2020-11-02",
   }
 
     # unpack in folder IceChart
-  outdir <- file.path(output_dir, "ice_data", format(target_date, "%Y-%m-%d"))
+  outdir <- file.path(output_dir, "data_unzip", format(target_date, "%Y-%m-%d"))
   if (!dir.exists(outdir)) {
     dir.create(outdir, recursive = TRUE)
   }
