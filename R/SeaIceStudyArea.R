@@ -72,4 +72,5 @@ SeaIceStudyArea <- function(shp, tif, out_path = NULL) {
   shp_clipped
 }
 
+
 # To-Do: Want to include optional land mask clipping with osmdata in this function too
