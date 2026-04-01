@@ -24,36 +24,42 @@
   as.character(x_num * 10)
 }
 
+# Stage of development
 .translate_stage <- function(x) {
   x <- .clean_value(x)
-  if (x %in% c("not available", "X")) return("not available")
+  if (x %in% c("not available")) return("not available")
 
   stage_map <- c(
-    "1"    = "New ice (< 10 cm)",
-    "2"    = "Nilas / Ice rind (< 10 cm)",
-    "3"    = "Young ice (10-30 cm)",
-    "4"    = "Grey ice (10-15 cm)",
-    "5"    = "Grey-white ice (15-30 cm)",
-    "6"    = "First-year ice (>= 30 cm)",
-    "7"    = "Thin first-year ice (30-70 cm)",
-    "8"    = "First stage thin first-year ice (30-50 cm)",
-    "9"    = "Second stage thin first-year ice (50-70 cm)",
-    "1."   = "Medium first-year ice (70-120 cm)",
-    "4."   = "Thick first-year ice (> 120 cm)",
-    "7."   = "Old ice",
-    "8."   = "Second-year ice",
-    "9."   = "Multi-year ice",
-    "-9"   = "not available",
-    "99"   = "not available",
+    "0" = "Ice Free",
+    "80"= "No Stage of Development",
+    "81" = "New ice",
+    "82" = "Nilas / Ice rind (< 10 cm)",
+    "83" = "Young ice (10-30 cm)",
+    "84" = "Grey ice (10-15 cm)",
+    "85" = "Grey-white ice (15-30 cm)",
+    "86" = "First-year ice (30 - 200 cm)",
+    "87" = "Thin First Year Ice (30-70 cm)",
+    "88" = "Thin First Year Ice Stage 1 (30-50 cm)",
+    "89" = "Thin First Year Ice Stage 2 (50-70 cm)",
+    "90"= "For later Use?",
+    "91"= "Medium First Year Ice (70-120 cm)",
+    "92"= "fot later use?",
+    "93"= "Thick First Year Ice (> 120 cm)",
+    "94"="For later use?",
+    "95"= "Old ice",
+    "96"= "Second Year Ice",
+    "97"= "Multi Year Ice",
+    "98"= "Glacier Ice",
+    "99"= "undetermined/Unknown",
     "null" = "not available"
   )
 
   if (x %in% names(stage_map)) stage_map[[x]] else as.character(x)
 }
 
-# Returns the first non-empty stage value from E_SO > E_SA > E_SB > E_SC > E_SD
+# Returns the first non-empty stage value from SO > SA > SB > SC > SD > CN > CD
 .get_first_stage_value <- function(v) {
-  for (col in c("E_SO", "E_SA", "E_SB", "E_SC", "E_SD")) {
+  for (col in c("SO", "SA", "SB", "SC", "SD", "CN", "CD")) {
     if (col %in% names(v)) {
       val <- .clean_value(v[[col]][1])
       if (!val %in% c("not available", "X")) return(val)
@@ -68,10 +74,10 @@
 # E_SO is ice in traces (no concentration column), handled separately
 .parse_ice_layers <- function(v) {
   pairs <- list(
-    c(conc="E_CA", stage="E_SA"),
-    c(conc="E_CB", stage="E_SB"),
-    c(conc="E_CC", stage="E_SC"),
-    c(conc="E_CD", stage="E_SD")
+    c(conc="CA", stage="SA", stage="FA"),
+    c(conc="CB", stage="SB", stage="FB"),
+    c(conc="CC", stage="SC", stage="FC"),
+    c()
   )
   layers <- list()
   #special case for E_SO, because it indicates stage aber no concntration?:
