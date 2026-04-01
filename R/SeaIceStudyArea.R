@@ -17,6 +17,7 @@
 #'
 #' @export
 #To-Do: Need to describe function
+# To-Do: Maybe deleting Land polygones is not smart
 
 SeaIceStudyArea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
   # Input validation
