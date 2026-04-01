@@ -35,7 +35,7 @@ searchCISfiles <- function(region = "Eastern_Arctic", year = "2024") {
 }
 
 
-#' Download the Ice Chart and load it as an SF object
+#' Download the Ice Chart and load it as an SF object and add unique IDs
 #'
 #' @param target_date Date as string in format "YYYY-MM-DD" or as date object
 #' @param region Region (default: "Eastern_Arctic")
