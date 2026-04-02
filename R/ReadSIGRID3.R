@@ -120,15 +120,12 @@ poly_type <- c(
   "S" = "Ice Shelf / Ice of Land Origin"
 )
 
-# !!!!NEED TO USE THIS: https://globalcryospherewatch.org/wordpress/wp-content/themes/global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
-
-#INSTEAD OF THE OLD EGG CODE!!!!!
-
 #  Internal helpers
+#--- Handling No Data ----------------------------------------------------------
 
 .clean_value <- function(x) {
   if (length(x) == 0 || is.null(x) || is.na(x) || x == "") {
-    return("not available")
+    return(NA_character_)
   }
   as.character(x)
 }
@@ -140,55 +137,49 @@ poly_type <- c(
   suppressWarnings(as.numeric(x))
 }
 
+#---Reading SIGRID3 code -------------------------------------------------------
+
+# SIGRID3 Code as string for ice concentration
+.translate_concentration <- function(x) {
+  x <- .clean_value(x)
+  if (is.na(x)) return(NA_character_)
+  if (x %in% names(ice_concentration))
+    return(ice_concentration[[x]])
+  if (x %in% names(ice_concentration_intervals))
+    return(ice_concentration_intervals[[x]])
+  NA_character_
+}
+
+# SIGRID3 Code as string for stage of development
+# return raw code if not in table (so nothing is lost)
+.translate_stage <- function(x) {
+  x <- .clean_value(x)
+  if (is.na(x)) return(NA_character_)
+  if (x %in% names(ice_stage_development))
+    return(ice_stage_development[[x]])
+  x
+}
+
+# SIGRID3 Code as string for ice form
+.translate_form <- function(x) {
+  x <- .clean_value(x)
+  if (is.na(x)) return(NA_character_)
+  if (x %in% names(ice_form)) return(ice_form[[x]])
+  x  # return raw code if not in table
+}
+
 .translate_e_ca <- function(x) {
   x_num <- .clean_numeric(x)
   if (is.na(x_num)) return("not available")
   as.character(x_num * 10)
 }
 
-# Stage of development
-.translate_stage <- function(x) {
-  x <- .clean_value(x)
-  if (x %in% c("not available")) return("not available")
+#---------------------------------------------------------------
 
-  ice_stage_development <- c(
-    "0" = "Ice Free",
-    "80"= "No Stage of Development",
-    "81" = "New ice",
-    "82" = "Nilas / Ice rind (< 10 cm)",
-    "83" = "Young ice (10-30 cm)",
-    "84" = "Grey ice (10-15 cm)",
-    "85" = "Grey-white ice (15-30 cm)",
-    "86" = "First-year ice (30 - 200 cm)",
-    "87" = "Thin First Year Ice (30-70 cm)",
-    "88" = "Thin First Year Ice Stage 1 (30-50 cm)",
-    "89" = "Thin First Year Ice Stage 2 (50-70 cm)",
-    "90"= "For later Use?",
-    "91"= "Medium First Year Ice (70-120 cm)",
-    "92"= "fot later use?",
-    "93"= "Thick First Year Ice (> 120 cm)",
-    "94"="For later use?",
-    "95"= "Old ice",
-    "96"= "Second Year Ice",
-    "97"= "Multi Year Ice",
-    "98"= "Glacier Ice",
-    "99"= "undetermined/Unknown",
-    "null" = "not available"
-  )
 
-  if (x %in% names(ice_stage_development)) ice_stage_development[[x]] else as.character(x)
-}
 
-# Returns the first non-empty stage value from SO > SA > SB > SC > SD > CN > CD
-.get_first_stage_value <- function(v) {
-  for (col in c("SO", "SA", "SB", "SC", "SD", "CN", "CD")) {
-    if (col %in% names(v)) {
-      val <- .clean_value(v[[col]][1])
-      if (!val %in% c("not available", "X")) return(val)
-    }
-  }
-  "not available"
-}
+
+
 
 # Building Egg code Pairs for the consentration and development stage
 # Also E_SO is a special case
