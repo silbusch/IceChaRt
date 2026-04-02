@@ -1,6 +1,7 @@
+# To-Do: Need to create order for function to print and read the code. Right now, sometimes is CB printed before CA
+
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
-# Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/
-#            global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
+# Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
 
 
 #--- Lookup tables -------------------------------------------------------------
@@ -34,7 +35,8 @@ ice_concentration <- c(
   "70" = "7/10",
   "80" = "8/10",
   "90" = "9/10",
-  "92"= "10/10"
+  "92"= "10/10",
+  "-9"= "Not set"
 )
 
 #Concentration intervals (lowest concentration in interval followed by highest
@@ -56,7 +58,8 @@ ice_concentration_intervals <- c(
   "23"= "2/10 – 3/10",
   "13"= "1/10 – 3/10",
   "12"= "1/10 – 2/10",
-  "99"= "Unknown"
+  "99"= "Unknown",
+  "-9"= "Not set"
 )
 
 # Thickness of ice or stage of development codes for variable identifiers
@@ -82,7 +85,8 @@ ice_stage_development <- c(
   "96"= "Second Year Ice",
   "97"= "Multi Year Ice",
   "98"= "Glacier Ice",
-  "99"= "undetermined/Unknown"
+  "99"= "undetermined/Unknown",
+  "-9"= "Not set"
 )
 
 # Form of ice codes for variable identifiers FA, FB, FC, and CF.
@@ -109,7 +113,8 @@ ice_form <- c(
   "19"="Strips and Patches concentrations 9/10",
   "20"="Strips and Patches concentrations 10/10",
   "21"= "Level Ice",
-  "99"= "undetermined/Unknown"
+  "99"= "undetermined/Unknown",
+  "-9"= "Not set"
 )
 
 #List of Poly_type character variables
@@ -118,7 +123,8 @@ poly_type <- c(
   "W"= "Water – sea ice free",
   "I" = "Ice – of any concentration",
   "N" = "No Data",
-  "S" = "Ice Shelf / Ice of Land Origin"
+  "S" = "Ice Shelf / Ice of Land Origin",
+  "-9"= "Not set"
 )
 
 #  Internal helpers
