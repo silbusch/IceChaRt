@@ -1,3 +1,106 @@
+# Concentration codes for variable identifiers CT, CA, CB, and CC.
+ice_concentration <- c(
+  "00" = "Ice Free",
+  "01"= "Less than 1/10 of ice (open water)",
+  "02" = "Bergy Water",
+  "10" = "1/10",
+  "20" = "2/10",
+  "30" = "3/10",
+  "40" = "4/10",
+  "50" = "5/10",
+  "60" = "6/10",
+  "70" = "7/10",
+  "80" = "8/10",
+  "90" = "9/10",
+  "92"= "10/10"
+)
+
+#Concentration intervals (lowest concentration in interval followed by highest
+ice_concentration_intervals <- c(
+  "91" = "9/10 –10/10",
+  "89"= "8/10 – 9/10",
+  "81" = "8/10 – 10/10",
+  "79" = "7/10 – 9/10",
+  "78" = "7/10 – 8 /10",
+  "68" = "6/10 – 8/10",
+  "67" = "6/10 – 7/10",
+  "57" = "5/10 – 7/10",
+  "56" = "5/10 – 6/10",
+  "46" = "4/10 – 6/10",
+  "45" = "4/10 – 5/10",
+  "35" = "3/10 – 5/10",
+  "34" = "3/10 – 4/10",
+  "24" = "2/10 – 4/10",
+  "23"= "2/10 – 3/10",
+  "13"= "1/10 – 3/10",
+  "12"= "1/10 – 2/10",
+  "99"= "Unknown"
+)
+
+# Thickness of ice or stage of development codes for variable identifiers
+# SA, SB, SC, CN,and CD.
+ice_stage_development <- c(
+  "0" = "Ice Free",
+  "80"= "No Stage of Development",
+  "81" = "New ice",
+  "82" = "Nilas / Ice rind (< 10 cm thickness)",
+  "83" = "Young ice (10-30 cm thickness)",
+  "84" = "Grey ice (10-15 cm thickness)",
+  "85" = "Grey-white ice (15-30 cm thickness)",
+  "86" = "First-year ice (30 - 200 cm thickness)",
+  "87" = "Thin First Year Ice (30-70 cm thickness)",
+  "88" = "Thin First Year Ice Stage 1 (30-50 cm thickness)",
+  "89" = "Thin First Year Ice Stage 2 (50-70 cm thickness)",
+  "90"= "Not set", #For later use
+  "91"= "Medium First Year Ice (70-120 cm thickness)",
+  "92"= "Not set", #For later use
+  "93"= "Thick First Year Ice (> 120 cm thickness)",
+  "94"="Not set", #For later use
+  "95"= "Old ice",
+  "96"= "Second Year Ice",
+  "97"= "Multi Year Ice",
+  "98"= "Glacier Ice",
+  "99"= "undetermined/Unknown",
+  "null" = "not available"
+)
+
+# Form of ice codes for variable identifiers FA, FB, FC, and CF.
+ice_form <- c(
+  "00"= "Pancake Ice (30 cm - 3 m)",
+  "01" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
+  "02" = "Ice Cake < 20 m across",
+  "03" = "Small Floe 20 m - 100 m across",
+  "04" = "Medium Floe 100 m - 500 m across",
+  "05" = "Big Floe 500 m - 2 km across",
+  "06" = "Vast Floe 2 km - 10 km across",
+  "07" = "Giant Floe > 10 km across",
+  "08" = "Fast Ice",
+  "09" = "Growlers, Floebergs or Floebiits",
+  "10"= "Icebergs",
+  "11"= "Strips and Patches concentrations 1/10",
+  "12"= "Strips and Patches concentrations 2/10",
+  "13"= "Strips and Patches concentrations 3/10",
+  "14"="Strips and Patches concentrations 4/10",
+  "15"="Strips and Patches concentrations 5/10",
+  "16"="Strips and Patches concentrations 6/10",
+  "17"="Strips and Patches concentrations 7/10",
+  "18"="Strips and Patches concentrations 8/10",
+  "19"="Strips and Patches concentrations 9/10",
+  "20"="Strips and Patches concentrations 10/10",
+  "21"= "Level Ice",
+  "99"= "undetermined/Unknown",
+  "null" = "not available"
+)
+
+#List of Poly_type character variables
+poly_type <- c(
+  "L" = "Land",
+  "W"= "Water – sea ice free",
+  "I" = "Ice – of any concentration",
+  "N" = "No Data",
+  "S" = "Ice Shelf / Ice of Land Origin"
+)
+
 # !!!!NEED TO USE THIS: https://globalcryospherewatch.org/wordpress/wp-content/themes/global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
 
 #INSTEAD OF THE OLD EGG CODE!!!!!
@@ -29,7 +132,7 @@
   x <- .clean_value(x)
   if (x %in% c("not available")) return("not available")
 
-  stage_map <- c(
+  ice_stage_development <- c(
     "0" = "Ice Free",
     "80"= "No Stage of Development",
     "81" = "New ice",
@@ -54,7 +157,7 @@
     "null" = "not available"
   )
 
-  if (x %in% names(stage_map)) stage_map[[x]] else as.character(x)
+  if (x %in% names(ice_stage_development)) ice_stage_development[[x]] else as.character(x)
 }
 
 # Returns the first non-empty stage value from SO > SA > SB > SC > SD > CN > CD
