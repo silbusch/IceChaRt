@@ -285,7 +285,7 @@ poly_type <- c(
 #'
 #' @return A single character string with the polygon description.
 #' @export
-describe_ice_polygon <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
+ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
 
   # check POLY_TYPE before anything else
   poly <- shp[shp[[id_col]] == polygon_id, ]
