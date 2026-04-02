@@ -1,5 +1,3 @@
-# To-Do: Need to add an option for user to see, which region and year is possible
-
 #' List of available Ice Chart files
 #'
 #' @param region "East_Coast", “Eastern_Arctic”, "Great_Lakes", “Hudson_Bay”, "Western_Arctic")
@@ -14,6 +12,14 @@ searchCISfiles <- function(region = "Eastern_Arctic", year = "2024") {
     stop(
       "Invalid `region`: '", region, "'.\n",
       "Valid regions are: ", paste(valid_regions, collapse = ", "), "\n",
+      call. = FALSE
+    )
+  }
+
+  if (year < 2006) {
+    stop(
+      "Invalid `year`: '", year, "'.\n",
+      "Valid years are between 2006 and today.",
       call. = FALSE
     )
   }
