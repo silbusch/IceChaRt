@@ -40,13 +40,11 @@ searchCISfiles <- function(region = "Eastern_Arctic", year = "2024") {
 #' @param target_date Date as string in format "YYYY-MM-DD" or as date object
 #' @param region Region (default: "Eastern_Arctic")
 #' @param output_dir Directory to cache (default: NULL --> using working directory)
-#' @param id_prefix Prefix for ice-polygon IDs (default: "poly")
 #' @return sf-object with ice chart polygons and unique IDs
 #' @export
 downloadCISIceChart <- function(target_date = "2020-11-02",
                                region     = "Eastern_Arctic",
-                               output_dir  = NULL,
-                               id_prefix  = "poly") {
+                               output_dir  = NULL) {
 
   target_date <- as.Date(target_date)
   year      <- format(target_date, "%Y")
@@ -58,7 +56,7 @@ downloadCISIceChart <- function(target_date = "2020-11-02",
     stop("No Chart for ", target_date, " in region '", region, "' found.\n",
          "Please select one of the alternative date: ", paste(files$datum[files$standard], collapse = ", "))
   }
-  # create Folder for CIS Ice charts
+  # create output Folder for CIS Ice charts
   if (is.null(output_dir)) {
     main_dir  <- file.path(getwd(), "IceChaRt_output")
     output_dir <- file.path(main_dir, "IceChart")
@@ -79,7 +77,7 @@ downloadCISIceChart <- function(target_date = "2020-11-02",
     }
   }
 
-  row    <- match[nrow(match), ]
+  row <- match[nrow(match), ]
   destfile <- file.path(output_dir, row$filename)
 
   # Cache: download only, if data is not already there
@@ -93,11 +91,9 @@ downloadCISIceChart <- function(target_date = "2020-11-02",
     message("From cache: ", destfile)
   }
 
-    # unpack in folder IceChart
+  # unpack in folder IceChart
   outdir <- file.path(output_dir, "data_unzip", format(target_date, "%Y-%m-%d"))
-  if (!dir.exists(outdir)) {
-    dir.create(outdir, recursive = TRUE)
-  }
+  if (!dir.exists(outdir))dir.create(outdir, recursive = TRUE)
 
   utils::untar(destfile, exdir = outdir)
 
@@ -108,27 +104,19 @@ downloadCISIceChart <- function(target_date = "2020-11-02",
     recursive = TRUE
   )
 
-  if (length(shp_files) == 0) {
-    stop("No shapefile found in the archive: ", destfile)
-  }
+  if (length(shp_files) == 0) stop("No shapefile found in the archive: ", destfile)
 
-  shp <- shp_files[1]
-
-  ice <- sf::st_read(shp, quiet = TRUE)
+  ice <- sf::st_read(shp_files[1], quiet = TRUE)
 
   # Create unique IDs
-  ice$id <- paste0(
-    id_prefix, "_",
-    format(target_date, "%Y%m%d"), "_",
-    seq_len(nrow(ice))
-  )
-
+  ice$ID_NEW <- seq_len(nrow(ice))
   # ID as first column
-  ice <- ice[, c("id", setdiff(names(ice), c("id", "geometry")), "geometry")]
+  ice <- ice[, c("ID_NEW", setdiff(names(ice), c("ID_NEW", "geometry")), "geometry")]
 
+  # save as gpkg with the new IDs
   final_gpkg <- file.path(
     output_dir,
-    paste0(tools::file_path_sans_ext(basename(shp)), "_with_id.gpkg")
+    paste0(tools::file_path_sans_ext(basename(shp_files[1])), "_with_new_id.gpkg")
   )
 
   sf::st_write(ice, final_gpkg, delete_dsn = TRUE, quiet = TRUE)
