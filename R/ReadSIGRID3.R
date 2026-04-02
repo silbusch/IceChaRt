@@ -142,7 +142,8 @@ poly_type <- c(
 # SIGRID3 Code as string for ice concentration
 .translate_concentration <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x)) return(NA_character_)
+  if (is.na(x))
+    return(NA_character_)
   if (x %in% names(ice_concentration))
     return(ice_concentration[[x]])
   if (x %in% names(ice_concentration_intervals))
@@ -154,7 +155,8 @@ poly_type <- c(
 # return raw code if not in table (so nothing is lost)
 .translate_stage <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x)) return(NA_character_)
+  if (is.na(x))
+    return(NA_character_)
   if (x %in% names(ice_stage_development))
     return(ice_stage_development[[x]])
   x
@@ -163,74 +165,73 @@ poly_type <- c(
 # SIGRID3 Code as string for ice form
 .translate_form <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x)) return(NA_character_)
-  if (x %in% names(ice_form)) return(ice_form[[x]])
+  if (is.na(x))
+    return(NA_character_)
+  if (x %in% names(ice_form))
+    return(ice_form[[x]])
   x  # return raw code if not in table
 }
 
 .translate_e_ca <- function(x) {
   x_num <- .clean_numeric(x)
-  if (is.na(x_num)) return("not available")
+  if (is.na(x_num))
+    return("not available")
   as.character(x_num * 10)
 }
 
-#---------------------------------------------------------------
+#---Ice layer intrepretation -------------------------------------------------------
 
-
-
-
-
-
-# Building Egg code Pairs for the consentration and development stage
-# Also E_SO is a special case
-# Column pairs: concentration column -> stage column
-# E_SO is ice in traces (no concentration column), handled separately
+# Returns a list of layers, each a named list with: conc, stage, form, is_minor
+# is_minor = TRUE  for CN / CD layers (concentration implicitly < 1/10,no concentration column exists)
+# is_minor = FALSE for the regular CA/CB/CC layers
 .parse_ice_layers <- function(v) {
-  pairs <- list(
-    c(conc="CA", stage="SA", stage="FA"),
-    c(conc="CB", stage="SB", stage="FB"),
-    c(conc="CC", stage="SC", stage="FC"),
-    c()
-  )
+
+  getraw <- function(col)
+    if (col %in% names(v)) .clean_value(v[[col]][1])
+    else NA_character_
+
   layers <- list()
-  #special case for E_SO, because it indicates stage aber no concntration?:
-  # To-Do: Need to check what SO means
-  if ("E_SO"%in% names(v)) {
-    so_val <- .clean_value(v[["E_SO"]][1])
-    if (!so_val %in% c("not available", "X", "-9", "99", "null", "")){
+
+  # Regular layers combination: CA/SA/FA, CB/SB/FB, CC/SC/FC
+  triplets <- list(
+    c(conc = "CA", stage = "SA", form = "FA"),
+    c(conc = "CB", stage = "SB", form = "FB"),
+    c(conc = "CC", stage = "SC", form = "FC")
+  )
+
+  for (tri in triplets) {
+    conc_txt  <- .translate_concentration(getraw(tri["conc"]))
+    stage_txt <- .translate_stage(getraw(tri["stage"]))
+    form_txt  <- .translate_form(getraw(tri["form"]))
+
+    if (!is.na(conc_txt) || !is.na(stage_txt) || !is.na(form_txt)) {
       layers <- c(layers, list(list(
-        conc_pct = NA_real_,
-        stage = .translate_stage(so_val),
-        is_trace=TRUE
-      )))
-    }
-  }
-  for (pair in pairs) {
-    conc_col  <- pair["conc"]
-    stage_col <- pair["stage"]
-
-    conc_raw  <- if (conc_col  %in% names(v)) .clean_value(v[[conc_col]][1])  else "not available"
-    stage_raw <- if (stage_col %in% names(v)) .clean_value(v[[stage_col]][1]) else "not available"
-
-    conc_pct  <- .translate_concentration(conc_raw)
-    stage_txt <- .translate_stage(stage_raw)
-
-    # Only include the layer if at least one value is meaningful
-    has_conc  <- !is.na(conc_pct)
-    has_stage <- !stage_txt %in% "not available"
-
-    if (has_conc || has_stage) {
-      layers <- c(layers, list(list(
-        conc_pct = conc_pct,
+        conc     = conc_txt,
         stage    = stage_txt,
-        is_trace = FALSE
+        form     = form_txt,
+        is_minor = FALSE
       )))
     }
   }
+
+  #minor layers: CN and CD (concentration < 1/10, stage only)
+  # CF is the polygon-wide predominant/secondary form --> stored separately.
+  for (col in c("CN", "CD")) {
+    stage_txt <- .translate_stage(getraw(col))
+    if (!is.na(stage_txt)) {
+      layers <- c(layers, list(list(
+        conc     = NA_character_,
+        stage    = stage_txt,
+        form     = NA_character_,
+        is_minor = TRUE
+      )))
+    }
+  }
+
   layers
 }
 
-# Returns a named list with all parsed polygon values (no formatting here)
+# Return list of all values
 .parse_polygon <- function(shp, polygon_id, id_col) {
   if (!inherits(shp, "SpatVector")) {
     stop("`shp` must be a terra::SpatVector.", call. = FALSE)
@@ -240,30 +241,39 @@ poly_type <- c(
   }
 
   poly <- shp[shp[[id_col]] == polygon_id, ]
-
   if (nrow(poly) == 0) {
     stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
   }
 
   v <- as.data.frame(poly)[1, , drop = FALSE]
 
-  getv <- function(col) if (col %in% names(v)) .clean_value(v[[col]][1])  else "not available"
-  getn <- function(col) if (col %in% names(v)) .clean_numeric(v[[col]][1]) else NA_real_
+  getv <- function(col)
+    if (col %in% names(v)) .clean_value(v[[col]][1])
+    else "not available"
+  getn <- function(col)
+    if (col %in% names(v)) .clean_numeric(v[[col]][1])
+    else NA_real_
 
-  # Resolve area — divide only if values suggest raw m² (> 1 000 000)
+  #To-Do: not sure about unit
+  # Convert are from m² to km²
   area_raw <- getn("AREA")
   area_km2 <- if (!is.na(area_raw)) {
-    if (area_raw > 1e6) area_raw / 1e6 else area_raw   # guard for already-km² data
+    if (area_raw > 1e6) area_raw / 1e6
+    else area_raw
   } else NA_real_
 
   list(
     polygon_label = getv(id_col),
     area_km2      = area_km2,
     ct            = getn("CT"),
-    e_ca_pct      = .translate_e_ca(getv("E_CA")),
-    stage         = .translate_stage(.get_first_stage_value(v))
+    cf            = .translate_form(getv("CF")),
+    ice_layers    = .parse_ice_layers(v)
   )
 }
+
+
+
+
 
 
 #' Looks up a single polygon by ID from a sea-ice shapefile (egg-code format) and
