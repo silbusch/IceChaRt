@@ -1,22 +1,27 @@
+# To-Do: Need text, if polygone is Land
+
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/
 #            global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
 
-# CT = Total concentration
-# CA = Partial concentration of thickest ice
-# SA = Stage of development of thickest ice
-# FA = Form of thickest ice
-# CB = Partial concentration of second thickest ice
-# SB = Stage of development of second thickest Ice
-# FB = Form of second thickest ice
-# CC = Partial concentration of the third thickest ice
-# SC = Stage of development of third thickest ice
-# FC = Form of third thickest ice
-# CN = Stage of development of ice thicker than SA but with concentration less then 1/10
-# CD =Stage of development of any remaining class of ice
-# CF = Predominant and secondary forms of ice
 
-# Lookup tables
+#--- Lookup tables -------------------------------------------------------------
+codes <- c(
+  "CT" = "Total concentration",
+  "CA" = "Partial concentration of thickest ice",
+  "SA" = "Stage of development of thickest ice",
+  "FA" = "Form of thickest ice",
+  "CB" = "Partial concentration of second thickest ice",
+  "SB" = "Stage of development of second thickest Ice",
+  "FB" = "Form of second thickest ice",
+  "CC" = "Partial concentration of the third thickest ice",
+  "SC" = "Stage of development of third thickest ice",
+  "FC" = "Form of third thickest ice",
+  "CN" = "Stage of development of ice thicker than SA but with concentration less then 1/10",
+  "CD" = "Stage of development of any remaining class of ice",
+  "CF" = "Predominant and secondary forms of ice"
+)
+
 # Concentration codes for variable identifiers CT, CA, CB, and CC.
 ice_concentration <- c(
   "00" = "Ice Free",
@@ -79,8 +84,7 @@ ice_stage_development <- c(
   "96"= "Second Year Ice",
   "97"= "Multi Year Ice",
   "98"= "Glacier Ice",
-  "99"= "undetermined/Unknown",
-  "null" = "not available"
+  "99"= "undetermined/Unknown"
 )
 
 # Form of ice codes for variable identifiers FA, FB, FC, and CF.
@@ -107,8 +111,7 @@ ice_form <- c(
   "19"="Strips and Patches concentrations 9/10",
   "20"="Strips and Patches concentrations 10/10",
   "21"= "Level Ice",
-  "99"= "undetermined/Unknown",
-  "null" = "not available"
+  "99"= "undetermined/Unknown"
 )
 
 #List of Poly_type character variables
@@ -170,13 +173,6 @@ poly_type <- c(
   if (x %in% names(ice_form))
     return(ice_form[[x]])
   x  # return raw code if not in table
-}
-
-.translate_e_ca <- function(x) {
-  x_num <- .clean_numeric(x)
-  if (is.na(x_num))
-    return("not available")
-  as.character(x_num * 10)
 }
 
 #---Ice layer intrepretation -------------------------------------------------------
@@ -265,71 +261,70 @@ poly_type <- c(
   list(
     polygon_label = getv(id_col),
     area_km2      = area_km2,
-    ct            = getn("CT"),
+    ct = .translate_concentration(getv("CT")),
     cf            = .translate_form(getv("CF")),
     ice_layers    = .parse_ice_layers(v)
   )
 }
 
-
-
-
-
-
-#' Looks up a single polygon by ID from a sea-ice shapefile (egg-code format) and
-#' turn it into easy readable text
+#' Describe a single sea-ice polygon
 #'
-#' @param shp      A \code{terra::SpatVector} loaded from an CIS shapefile.
-#' @param polygon_id  The identifier of the unique polygon ID to describe.
-#' @param id_col   Name of the column that holds polygon IDs
-#' @param add_id   If \code{TRUE} (default), \code{\link{add_poly_id}} is called
-#'                 automatically when \code{id_col} is missing from \code{shp}.
+#' Looks up one polygon by ID from a shapefile in SIGRID3-code and returns a
+#' description of its ice conditions, including concentration,
+#' stage of development, and ice form for each polygon.
+#'
+#' @param shp        A \code{terra::SpatVector} loaded from a shapefile (IceChart).
+#' @param polygon_id The value identifying the target polygon in \code{id_col}.
+#' @param id_col     Name of the column that holds polygon IDs (default: \code{"ID_NEW"}).
+#' @param add_id     If \code{TRUE} (default), \code{add_poly_id()} is called
+#'                   automatically when \code{id_col} is absent from \code{shp}.
 #'
 #' @return A single character string with the polygon description.
-#'
-#'
 #' @export
-describe_ice_polygon <- function(shp, polygon_id, id_col = "poly_id", add_id = TRUE) {
-
-  # Auto-add ID column if requested and missing
-  if (add_id && !(id_col %in% names(shp))) {
-    shp <- add_poly_id(shp, id_col)
-  }
+describe_ice_polygon <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
 
   p <- .parse_polygon(shp, polygon_id, id_col)
 
+  # area
   area_txt <- if (!is.na(p$area_km2)) {
     format(round(p$area_km2, 2), nsmall = 2, big.mark = ",")
   } else {
     "not available"
   }
 
-  ct_txt <- if (!is.na(p$ct)) as.character(p$ct) else "not available"
+  # total sea ice concentration for the polygon
+  ct_txt <- if (!is.na(p$ct)) p$ct else "not available"
 
-  stage_txt <- if (!p$e_ca_pct %in% "not available" && !p$stage %in% "not available") {
-    paste0(p$e_ca_pct, "% in the stage of ", p$stage)
-  } else {
-    "not available"
-  }
-
-  # One sentence per layer
+  # Ice  development, form text
   if (length(p$ice_layers) == 0) {
     layers_txt <- "  - not available"
   } else {
     layer_lines <- vapply(p$ice_layers, function(layer) {
-      if (isTRUE(layer$is_trace)) {
-        paste0("  - Traces: ", layer$stage)
+      if (isTRUE(layer$is_minor)) {
+        # CN /CD: concentration is less than 1/10
+        stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
+        paste0("  - < 1/10: ", stage_str, " (minor / trace layer)")
       } else {
-        conc_str  <- if (!is.na(layer$conc_pct)) paste0(layer$conc_pct, "%") else "unknown concentration"
-        stage_str <- if (!layer$stage %in% "not available") layer$stage else "unknown stage"
-        paste0("  - ", conc_str, ": ", stage_str)
+        conc_str  <- if (!is.na(layer$conc))  layer$conc  else "unknown concentration"
+        stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
+
+        line <- paste0(conc_str, " in the stage of ", stage_str)
+        if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
+        paste0("  - ", line)
       }
     }, character(1))
+
     layers_txt <- paste(layer_lines, collapse = "\n")
   }
+
+  # Polygon-wide dominant form (CF)
+  cf_txt <- if (!is.na(p$cf)) paste0("\nPredominant ice form: ", p$cf) else ""
+
   paste0(
     "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2. ",
-    ct_txt, "% of this area is ice-covered, ",
-    "with the following stage distribution:\n", layers_txt
+    ct_txt, " of this area is ice-covered, ",
+    "with the following stage distribution:\n",
+    layers_txt,
+    cf_txt
   )
 }
