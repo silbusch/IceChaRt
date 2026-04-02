@@ -1,3 +1,22 @@
+# Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
+# Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/
+#            global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
+
+# CT = Total concentration
+# CA = Partial concentration of thickest ice
+# SA = Stage of development of thickest ice
+# FA = Form of thickest ice
+# CB = Partial concentration of second thickest ice
+# SB = Stage of development of second thickest Ice
+# FB = Form of second thickest ice
+# CC = Partial concentration of the third thickest ice
+# SC = Stage of development of third thickest ice
+# FC = Form of third thickest ice
+# CN = Stage of development of ice thicker than SA but with concentration less then 1/10
+# CD =Stage of development of any remaining class of ice
+# CF = Predominant and secondary forms of ice
+
+# Lookup tables
 # Concentration codes for variable identifiers CT, CA, CB, and CC.
 ice_concentration <- c(
   "00" = "Ice Free",
@@ -68,12 +87,12 @@ ice_stage_development <- c(
 ice_form <- c(
   "00"= "Pancake Ice (30 cm - 3 m)",
   "01" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
-  "02" = "Ice Cake < 20 m across",
-  "03" = "Small Floe 20 m - 100 m across",
-  "04" = "Medium Floe 100 m - 500 m across",
-  "05" = "Big Floe 500 m - 2 km across",
-  "06" = "Vast Floe 2 km - 10 km across",
-  "07" = "Giant Floe > 10 km across",
+  "02" = "Ice Cake (< 20 m across)",
+  "03" = "Small Floe (20 m - 100 m across)",
+  "04" = "Medium Floe (100 m - 500 m across)",
+  "05" = "Big Floe (500 m - 2 km across)",
+  "06" = "Vast Floe (2 km - 10 km across)",
+  "07" = "Giant Floe (> 10 km across)",
   "08" = "Fast Ice",
   "09" = "Growlers, Floebergs or Floebiits",
   "10"= "Icebergs",
