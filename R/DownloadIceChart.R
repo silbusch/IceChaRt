@@ -1,3 +1,5 @@
+# To-Do: Need to add an option for user to see, which region and year is possible
+
 #' Download the Ice Chart and load it as an SF object and add unique IDs
 #'
 #' @param target_date Date as string in format "YYYY-MM-DD" or as date object
@@ -8,6 +10,16 @@
 downloadCISIceChart <- function(target_date = "2020-11-02",
                                region     = "Eastern_Arctic",
                                output_dir  = NULL) {
+
+  valid_regions <- c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
+
+  if (!region %in% valid_regions) {
+    stop(
+      "Invalid `region`: '", region, "'.\n",
+      "Valid regions are: ", paste(valid_regions, collapse = ", "), "\n",
+      call. = FALSE
+    )
+  }
 
   target_date <- as.Date(target_date)
   year      <- format(target_date, "%Y")
