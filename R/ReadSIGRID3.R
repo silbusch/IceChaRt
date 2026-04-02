@@ -1,5 +1,3 @@
-# To-Do: Need text, if polygone is Land
-
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/
 #            global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
@@ -283,6 +281,27 @@ poly_type <- c(
 #' @export
 describe_ice_polygon <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
 
+  # check POLY_TYPE before anything else
+  poly <- shp[shp[[id_col]] == polygon_id, ]
+  if (nrow(poly) == 0) {
+    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
+  }
+
+  v <- as.data.frame(poly)[1, , drop = FALSE]
+
+  if ("POLY_TYPE" %in% names(v)) {
+    poly_type_code <- .clean_value(v[["POLY_TYPE"]][1])
+
+    if (!is.na(poly_type_code) && poly_type_code != "I") {
+      description <- if (poly_type_code %in% names(poly_type)) {
+        poly_type[[poly_type_code]]
+      } else {
+        poly_type_code  # fallback: raw code if not in table
+      }
+      return(paste0("The chosen Polygon only contains ", description, "."))
+    }
+  }
+#---------------------------------------------------------------------------
   p <- .parse_polygon(shp, polygon_id, id_col)
 
   # area
