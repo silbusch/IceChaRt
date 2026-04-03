@@ -120,7 +120,7 @@ ice_form <- c(
 #List of Poly_type character variables
 poly_type <- c(
   "L" = "Land",
-  "W"= "Water – sea ice free",
+  "W"= "Water (sea ice free)",
   "I" = "Ice – of any concentration",
   "N" = "No Data",
   "S" = "Ice Shelf / Ice of Land Origin",
@@ -288,6 +288,16 @@ poly_type <- c(
 #' @export
 ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW") {
 
+  # If list of polygon_id :
+  if (length(polygon_id) > 1) {
+    out <- vapply(
+      polygon_id,
+      function(id) ReadSIGRID3(shp, id, id_col = id_col),
+      FUN.VALUE = character(1)
+    )
+    return(invisible(out))
+  }
+
   # Early exit for non-ice polygons (Land, Water, No Data, Ice Shelf)
   poly <- shp[shp[[id_col]] == polygon_id, ]
   if (nrow(poly) == 0)
@@ -300,7 +310,7 @@ ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW") {
     pt_code <- .clean_value(v[["POLY_TYPE"]][1])
     if (!is.na(pt_code) && pt_code != "I") {
       label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]] else pt_code
-      out <- paste0("The chosen polygon only contains: ", label, ".")
+      out <- paste0("Polygon ", polygon_id, " only contains: ", label, ".")
       cat(out, "\n")
       return(invisible(out))
     }
@@ -343,6 +353,6 @@ ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW") {
     ct_txt, " of this area is ice-covered, with the following stage distribution:\n",
     layers_txt
   )
-  cat(out, "\n")
+  cat(out, "\n\n")
   invisible(out)
 }
