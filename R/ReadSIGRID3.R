@@ -271,7 +271,7 @@ poly_type <- c(
   )
 }
 
-#' Describe a single sea-ice polygon
+#' Describe a sea-ice polygon based on SIGRID3 code
 #'
 #' Looks up one polygon by ID from a shapefile in SIGRID3-code and returns a
 #' description of its ice conditions, including concentration,
