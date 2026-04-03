@@ -130,6 +130,8 @@ poly_type <- c(
 #  Internal helpers
 #--- Handling No Data ----------------------------------------------------------
 
+.NOT_SET <- c("-9", "Not set", "")
+
 .clean_value <- function(x) {
   if (length(x) == 0 || is.null(x) || is.na(x) || x == "") {
     return(NA_character_)
@@ -149,12 +151,15 @@ poly_type <- c(
 # SIGRID3 Code as string for ice concentration
 .translate_concentration <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x))
-    return(NA_character_)
-  if (x %in% names(ice_concentration))
-    return(ice_concentration[[x]])
-  if (x %in% names(ice_concentration_intervals))
-    return(ice_concentration_intervals[[x]])
+  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (x %in% names(ice_concentration)) {
+    val <-  ice_concentration[[x]]
+    return(if (val %in% .NOT_SET) NA_character_ else val)
+  }
+  if (x %in% names(ice_concentration_intervals)) {
+    val <- ice_concentration_intervals[[x]]
+    return(if (val %in% .NOT_SET) NA_character_ else val)
+  }
   NA_character_
 }
 
@@ -162,21 +167,23 @@ poly_type <- c(
 # return raw code if not in table (so nothing is lost)
 .translate_stage <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x))
-    return(NA_character_)
-  if (x %in% names(ice_stage_development))
-    return(ice_stage_development[[x]])
-  x
+  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (x %in% names(ice_stage_development)) {
+    val <- ice_stage_development[[x]]
+    return(if (val %in% .NOT_SET) NA_character_ else val)
+  }
+  x  # return raw code if not in table so nothing lost
 }
 
 # SIGRID3 Code as string for ice form
 .translate_form <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x))
-    return(NA_character_)
-  if (x %in% names(ice_form))
-    return(ice_form[[x]])
-  x  # return raw code if not in table
+  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (x %in% names(ice_form)) {
+    val <- ice_form[[x]]
+    return(if (val %in% .NOT_SET) NA_character_ else val)
+  }
+  x
 }
 
 #---Ice layer intrepretation -------------------------------------------------------
@@ -186,9 +193,9 @@ poly_type <- c(
 # is_minor = FALSE for the regular CA/CB/CC layers
 .parse_ice_layers <- function(v) {
 
-  getraw <- function(col)
-    if (col %in% names(v)) .clean_value(v[[col]][1])
-    else NA_character_
+  getraw <- function(col) {
+    if (col %in% names(v)) .clean_value(v[[col]][1]) else NA_character_
+  }
 
   layers <- list()
 
@@ -204,14 +211,14 @@ poly_type <- c(
     stage_txt <- .translate_stage(getraw(tri["stage"]))
     form_txt  <- .translate_form(getraw(tri["form"]))
 
-    if (!is.na(conc_txt) || !is.na(stage_txt) || !is.na(form_txt)) {
-      layers <- c(layers, list(list(
-        conc     = conc_txt,
-        stage    = stage_txt,
-        form     = form_txt,
-        is_minor = FALSE
-      )))
-    }
+    # Skip if nothing meaningful in this column
+    if (is.na(conc_txt) && is.na(stage_txt) && is.na(form_txt)) next
+    layers <- c(layers, list(list(
+      conc     = conc_txt,
+      stage    = stage_txt,
+      form     = form_txt,
+      is_minor = FALSE
+    )))
   }
 
   #minor layers: CN and CD (concentration < 1/10, stage only)
@@ -233,40 +240,33 @@ poly_type <- c(
 
 # Return list of all values
 .parse_polygon <- function(shp, polygon_id, id_col) {
-  if (!inherits(shp, "SpatVector")) {
+  if (!inherits(shp, "SpatVector"))
     stop("`shp` must be a terra::SpatVector.", call. = FALSE)
-  }
-  if (!(id_col %in% names(shp))) {
+  if (!(id_col %in% names(shp)))
     stop(sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
-  }
 
   poly <- shp[shp[[id_col]] == polygon_id, ]
-  if (nrow(poly) == 0) {
-    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
-  }
+  if (nrow(poly) == 0)
+    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id),
+         call. = FALSE)
 
   v <- as.data.frame(poly)[1, , drop = FALSE]
 
   getv <- function(col)
-    if (col %in% names(v)) .clean_value(v[[col]][1])
-    else "not available"
+    if (col %in% names(v)) .clean_value(v[[col]][1]) else NA_character_
   getn <- function(col)
-    if (col %in% names(v)) .clean_numeric(v[[col]][1])
-    else NA_real_
+    if (col %in% names(v)) .clean_numeric(v[[col]][1]) else NA_real_
 
-  #To-Do: not sure about unit
-  # Convert are from m² to km²
+  # Convert area from m² to km² if value suggests raw m²
   area_raw <- getn("AREA")
   area_km2 <- if (!is.na(area_raw)) {
-    if (area_raw > 1e6) area_raw / 1e6
-    else area_raw
+    if (area_raw > 1e6) area_raw / 1e6 else area_raw
   } else NA_real_
 
   list(
     polygon_label = getv(id_col),
     area_km2      = area_km2,
-    ct = .translate_concentration(getv("CT")),
-    cf            = .translate_form(getv("CF")),
+    ct            = .translate_concentration(getv("CT")),
     ice_layers    = .parse_ice_layers(v)
   )
 }
@@ -277,34 +277,32 @@ poly_type <- c(
 #' description of its ice conditions, including concentration,
 #' stage of development, and ice form for each polygon.
 #'
+#' Non-ice polygons (Land, Water, No Data, Ice Shelf) are reported with a
+#' short one-line message instead.
+#'
 #' @param shp        A \code{terra::SpatVector} loaded from a shapefile (IceChart).
 #' @param polygon_id The value identifying the target polygon in \code{id_col}.
 #' @param id_col     Name of the column that holds polygon IDs (default: \code{"ID_NEW"}).
-#' @param add_id     If \code{TRUE} (default), \code{add_poly_id()} is called
-#'                   automatically when \code{id_col} is absent from \code{shp}.
 #'
-#' @return A single character string with the polygon description.
+#' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
-ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
+ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW") {
 
-  # check POLY_TYPE before anything else
+  # Early exit for non-ice polygons (Land, Water, No Data, Ice Shelf)
   poly <- shp[shp[[id_col]] == polygon_id, ]
-  if (nrow(poly) == 0) {
-    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
-  }
+  if (nrow(poly) == 0)
+    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id),
+         call. = FALSE)
 
   v <- as.data.frame(poly)[1, , drop = FALSE]
 
   if ("POLY_TYPE" %in% names(v)) {
-    poly_type_code <- .clean_value(v[["POLY_TYPE"]][1])
-
-    if (!is.na(poly_type_code) && poly_type_code != "I") {
-      description <- if (poly_type_code %in% names(poly_type)) {
-        poly_type[[poly_type_code]]
-      } else {
-        poly_type_code  # fallback: raw code if not in table
-      }
-      return(paste0("The chosen Polygon only contains ", description, "."))
+    pt_code <- .clean_value(v[["POLY_TYPE"]][1])
+    if (!is.na(pt_code) && pt_code != "I") {
+      label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]] else pt_code
+      out <- paste0("The chosen polygon only contains: ", label, ".")
+      cat(out, "\n")
+      return(invisible(out))
     }
   }
 #---------------------------------------------------------------------------
@@ -326,13 +324,11 @@ ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
   } else {
     layer_lines <- vapply(p$ice_layers, function(layer) {
       if (isTRUE(layer$is_minor)) {
-        # CN /CD: concentration is less than 1/10
         stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-        paste0("  - < 1/10: ", stage_str, " (minor / trace layer)")
+        paste0("  - < 1/10: ", stage_str)
       } else {
-        conc_str  <- if (!is.na(layer$conc))  layer$conc  else "unknown concentration"
+        conc_str  <- if (!is.na(layer$conc)) layer$conc else "unknown concentration"
         stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-
         line <- paste0(conc_str, " in the stage of ", stage_str)
         if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
         paste0("  - ", line)
@@ -342,14 +338,11 @@ ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW", add_id = TRUE) {
     layers_txt <- paste(layer_lines, collapse = "\n")
   }
 
-  # Polygon-wide dominant form (CF)
-  cf_txt <- if (!is.na(p$cf)) paste0("\nPredominant ice form: ", p$cf) else ""
-
-  paste0(
-    "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2. ",
-    ct_txt, " of this area is ice-covered, ",
-    "with the following stage distribution:\n",
-    layers_txt,
-    cf_txt
+  out <- paste0(
+    "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2.\n",
+    ct_txt, " of this area is ice-covered, with the following stage distribution:\n",
+    layers_txt
   )
+  cat(out, "\n")
+  invisible(out)
 }
