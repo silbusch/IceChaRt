@@ -1,23 +1,28 @@
 # To-Do: Need to create order for function to print and read the code. Right now, sometimes is CB printed before CA
 
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
-# Reference: https://globalcryospherewatch.org/wordpress/wp-content/themes/global-cryosphere-watch/files/resources/JCOMM_TR23_SIGRID3.pdf
+# Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
 
 
 #--- Lookup tables -------------------------------------------------------------
 codes <- c(
+  "AREA"="Area of polygon feature",
+  "PERIMETER" = "Perimeter length of polygon feature",
+  "POLY_TYPE" = "Type of polygon feature",
   "CT" = "Total concentration",
   "CA" = "Partial concentration of thickest ice",
-  "SA" = "Stage of development of thickest ice",
-  "FA" = "Form of thickest ice",
   "CB" = "Partial concentration of second thickest ice",
-  "SB" = "Stage of development of second thickest Ice",
-  "FB" = "Form of second thickest ice",
   "CC" = "Partial concentration of the third thickest ice",
-  "SC" = "Stage of development of third thickest ice",
-  "FC" = "Form of third thickest ice",
   "CN" = "Stage of development of ice thicker than SA but with concentration less then 1/10",
+  "SA" = "Stage of development of thickest ice",
+  "SB" = "Stage of development of second thickest Ice",
+  "SC" = "Stage of development of third thickest ice",
   "CD" = "Stage of development of any remaining class of ice",
+  "FA" = "Form of thickest ice",
+  "FB" = "Form of second thickest ice",
+  "FC" = "Form of third thickest ice",
+  "FP" = "Predominant form of ice",
+  "FS" = "Secondary form of ice",
   "CF" = "Predominant and secondary forms of ice"
 )
 
@@ -89,19 +94,19 @@ ice_stage_development <- c(
   "-9"= "Not set"
 )
 
-# Form of ice codes for variable identifiers FA, FB, FC, and CF.
+# Form of ice codes for variable identifiers FA, FB, FC, FP and FS.
 ice_form <- c(
-  "00"= "Pancake Ice (30 cm - 3 m)",
-  "01" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
-  "02" = "Ice Cake (< 20 m across)",
-  "03" = "Small Floe (20 m - 100 m across)",
-  "04" = "Medium Floe (100 m - 500 m across)",
-  "05" = "Big Floe (500 m - 2 km across)",
-  "06" = "Vast Floe (2 km - 10 km across)",
-  "07" = "Giant Floe (> 10 km across)",
-  "08" = "Fast Ice",
-  "09" = "Growlers, Floebergs or Floebiits",
-  "10"= "Icebergs",
+  "01"= "Pancake Ice (30 cm - 3 m)",
+  "02" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
+  "03" = "Ice Cake (< 20 m across)",
+  "04" = "Small Floe (20 m - 100 m across)",
+  "05" = "Medium Floe (100 m - 500 m across)",
+  "06" = "Big Floe (500 m - 2 km across)",
+  "07" = "Vast Floe (2 km - 10 km across)",
+  "08" = "Giant Floe (> 10 km across)",
+  "09" = "Fast Ice",
+  "10" = "Growlers, Floebergs or Floebiits",
+  #"10"= "Icebergs",
   "11"= "Strips and Patches concentrations 1/10",
   "12"= "Strips and Patches concentrations 2/10",
   "13"= "Strips and Patches concentrations 3/10",
@@ -111,8 +116,9 @@ ice_form <- c(
   "17"="Strips and Patches concentrations 7/10",
   "18"="Strips and Patches concentrations 8/10",
   "19"="Strips and Patches concentrations 9/10",
+  "91"="Strips and Patches concentrations 9+/10",
   "20"="Strips and Patches concentrations 10/10",
-  "21"= "Level Ice",
+  #"21"= "Level Ice",
   "99"= "undetermined/Unknown",
   "-9"= "Not set"
 )
@@ -286,73 +292,102 @@ poly_type <- c(
 #'
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
-ReadSIGRID3 <- function(shp, polygon_id, id_col = "ID_NEW") {
+ReadSIGRID3 <- function(shp,
+                        polygon_id,
+                        id_col = "ID_NEW",
+                        save_txt = TRUE,
+                        file_path = NULL) {
 
-  # If list of polygon_id :
-  if (length(polygon_id) > 1) {
-    out <- vapply(
-      polygon_id,
-      function(id) ReadSIGRID3(shp, id, id_col = id_col),
-      FUN.VALUE = character(1)
-    )
-    return(invisible(out))
-  }
+  .describe_one <- function(pid) {
 
-  # Early exit for non-ice polygons (Land, Water, No Data, Ice Shelf)
-  poly <- shp[shp[[id_col]] == polygon_id, ]
-  if (nrow(poly) == 0)
-    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id),
-         call. = FALSE)
+    poly <- shp[shp[[id_col]] == pid, ]
+    if (nrow(poly) == 0)
+      stop(sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
 
-  v <- as.data.frame(poly)[1, , drop = FALSE]
+    v <- as.data.frame(poly)[1, , drop = FALSE]
 
-  if ("POLY_TYPE" %in% names(v)) {
-    pt_code <- .clean_value(v[["POLY_TYPE"]][1])
-    if (!is.na(pt_code) && pt_code != "I") {
-      label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]] else pt_code
-      out <- paste0("Polygon ", polygon_id, " only contains: ", label, ".")
-      cat(out, "\n")
-      return(invisible(out))
-    }
-  }
-#---------------------------------------------------------------------------
-  p <- .parse_polygon(shp, polygon_id, id_col)
-
-  # area
-  area_txt <- if (!is.na(p$area_km2)) {
-    format(round(p$area_km2, 2), nsmall = 2, big.mark = ",")
-  } else {
-    "not available"
-  }
-
-  # total sea ice concentration for the polygon
-  ct_txt <- if (!is.na(p$ct)) p$ct else "not available"
-
-  # Ice  development, form text
-  if (length(p$ice_layers) == 0) {
-    layers_txt <- "  - not available"
-  } else {
-    layer_lines <- vapply(p$ice_layers, function(layer) {
-      if (isTRUE(layer$is_minor)) {
-        stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-        paste0("  - < 1/10: ", stage_str)
-      } else {
-        conc_str  <- if (!is.na(layer$conc)) layer$conc else "unknown concentration"
-        stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-        line <- paste0(conc_str, " in the stage of ", stage_str)
-        if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
-        paste0("  - ", line)
+    # Early exit for non-ice polygons (Land, Water, No Data, Ice Shelf)
+    if ("POLY_TYPE" %in% names(v)) {
+      pt_code <- .clean_value(v[["POLY_TYPE"]][1])
+      if (!is.na(pt_code) && pt_code != "I") {
+        label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]]
+      else pt_code
+        return(paste0("Polygon ", pid, " only contains: ", label, "."))
       }
-    }, character(1))
+    }
 
-    layers_txt <- paste(layer_lines, collapse = "\n")
+  #---------------------------------------------------------------------------
+    p <- .parse_polygon(shp, polygon_id, id_col)
+
+    # area
+    area_raw <- getn("AREA")
+    area_km2 <- if (!is.na(area_raw)) area_raw / 1e6 else NA_real_
+
+    # total sea ice concentration for the polygon
+    ct_txt <- if (!is.na(p$ct)) p$ct else "not available"
+
+    # Ice  development, form text
+    if (length(p$ice_layers) == 0) {
+      layers_txt <- "  - not available"
+    } else {
+      layer_lines <- vapply(p$ice_layers, function(layer) {
+        if (isTRUE(layer$is_minor)) {
+          stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
+          paste0("  - < 1/10: ", stage_str)
+        } else {
+          conc_str  <- if (!is.na(layer$conc)) layer$conc else "unknown concentration"
+          stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
+          line <- paste0(conc_str, " in the stage of ", stage_str)
+          if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
+          paste0("  - ", line)
+        }
+      }, character(1))
+
+      layers_txt <- paste(layer_lines, collapse = "\n")
+    }
+
+    paste0(
+      "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2.\n",
+      ct_txt, " of this area is ice-covered, with the following stage distribution:\n",
+      layers_txt
+    )
   }
+  #-Describe polygons --------------------------------------------------------------------------
+  descriptions <- vapply(polygon_id, .describe_one, character(1))
+  cat(paste(descriptions, collapse = "\n\n"), "\n\n")
 
-  out <- paste0(
-    "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2.\n",
-    ct_txt, " of this area is ice-covered, with the following stage distribution:\n",
-    layers_txt
-  )
-  cat(out, "\n\n")
-  invisible(out)
+# --- Optional: save as .txt-----------------------------------------
+  if (save_txt) {
+    if (is.null(file_path)) {
+      main_dir  <- file.path(getwd(), "IceChaRt_output")
+      out_dir   <- file.path(main_dir, "SIGRID3_text")
+      for (d in c(main_dir, out_dir)) {
+        if (!dir.exists(d)) {
+          dir.create(d, recursive = TRUE)
+          message("Created directory: ", d)
+        }
+      }
+      timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+      file_path <- file.path(out_dir, paste0("IceChaRt_SIGRID3_", timestamp, ".txt"))
+    } else {
+      out_dir <- dirname(file_path)
+      if (!dir.exists(out_dir)) {
+        dir.create(out_dir, recursive = TRUE)
+        message("Created output directory: ", out_dir)
+      }
+      if (!grepl("\\.txt$", file_path, ignore.case = TRUE)) {
+        file_path <- paste0(file_path, ".txt")
+      }
+    }
+
+    header <- paste0(
+      "IceChaRt - Sea Ice Polygon Description\n",
+      "Generated: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n",
+      "Polygons:  ", paste(polygon_id, collapse = ", "), "\n",
+      strrep("-", 50), "\n\n"
+    )
+
+    writeLines(paste0(header, paste(descriptions, collapse = "\n\n")), file_path)
+    message("Output saved to: ", file_path)
+  }
 }
