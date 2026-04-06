@@ -1,5 +1,3 @@
-# To-Do: Need to create order for function to print and read the code. Right now, sometimes is CB printed before CA
-
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
 
@@ -139,16 +137,12 @@ poly_type <- c(
 .NOT_SET <- c("-9", "Not set", "")
 
 .clean_value <- function(x) {
-  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") {
-    return(NA_character_)
-  }
-  as.character(x)
+  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") return(NA_character_)
+  trimws(as.character(x))
 }
 
 .clean_numeric <- function(x) {
-  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") {
-    return(NA_real_)
-  }
+  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") return(NA_real_)
   suppressWarnings(as.numeric(x))
 }
 
@@ -159,7 +153,7 @@ poly_type <- c(
   x <- .clean_value(x)
   if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
   if (x %in% names(ice_concentration)) {
-    val <-  ice_concentration[[x]]
+    val <- ice_concentration[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
   if (x %in% names(ice_concentration_intervals)) {
@@ -189,7 +183,24 @@ poly_type <- c(
     val <- ice_form[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
-  x
+  x  # raw code as fallback
+}
+
+#To-Do: ?????CF ist 4-Zeichen-String: ersten zwei Zeichen = FP, letzten 2 = FS????? In Doc schauen
+.translate_cf <- function(x) {
+  x <- .clean_value(x)
+  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (nchar(x) == 4) {
+    fp_txt <- .translate_form(substr(x, 1, 2))
+    fs_txt <- .translate_form(substr(x, 3, 4))
+    parts  <- c(
+      if (!is.na(fp_txt)) paste0("predominant: ", fp_txt),
+      if (!is.na(fs_txt)) paste0("secondary: ",   fs_txt)
+    )
+    if (length(parts) == 0) return(NA_character_)
+    return(paste(parts, collapse = ", "))
+  }
+  .translate_form(x)
 }
 
 #---Ice layer intrepretation -------------------------------------------------------
@@ -251,7 +262,7 @@ poly_type <- c(
   if (!(id_col %in% names(shp)))
     stop(sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
 
-  poly <- shp[shp[[id_col]] == polygon_id, ]
+  poly <- shp[as.character(shp[[id_col]]) == as.character(polygon_id), ]
   if (nrow(poly) == 0)
     stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id),
          call. = FALSE)
@@ -263,16 +274,15 @@ poly_type <- c(
   getn <- function(col)
     if (col %in% names(v)) .clean_numeric(v[[col]][1]) else NA_real_
 
-  # Convert area from m² to km² if value suggests raw m²
+  # Convert area from m² to km²
   area_raw <- getn("AREA")
-  area_km2 <- if (!is.na(area_raw)) {
-    if (area_raw > 1e6) area_raw / 1e6 else area_raw
-  } else NA_real_
+  area_km2 <- if (!is.na(area_raw)) area_raw / 1e6 else NA_real_
 
   list(
-    polygon_label = getv(id_col),
+    polygon_label = as.character(polygon_id),
     area_km2      = area_km2,
     ct            = .translate_concentration(getv("CT")),
+    cf            = .translate_cf(getv("CF")),
     ice_layers    = .parse_ice_layers(v)
   )
 }
@@ -286,9 +296,11 @@ poly_type <- c(
 #' Non-ice polygons (Land, Water, No Data, Ice Shelf) are reported with a
 #' short one-line message instead.
 #'
-#' @param shp        A \code{terra::SpatVector} loaded from a shapefile (IceChart).
-#' @param polygon_id The value identifying the target polygon in \code{id_col}.
-#' @param id_col     Name of the column that holds polygon IDs (default: \code{"ID_NEW"}).
+#' @param shp        A \code{terra::SpatVector} loaded from a CIS ice chart shapefile.
+#' @param polygon_id A single ID or vector of IDs identifying the target polygon(s).
+#' @param id_col     Name of the column holding polygon IDs (default: \code{"ID_NEW"}).
+#' @param save_txt   Logical. If \code{TRUE}, output is saved as a .txt file.
+#' @param file_path  Optional path for the output file. Auto-generated if \code{NULL}.
 #'
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
@@ -300,7 +312,7 @@ ReadSIGRID3 <- function(shp,
 
   .describe_one <- function(pid) {
 
-    poly <- shp[shp[[id_col]] == pid, ]
+    poly <- shp[as.character(shp[[id_col]]) == as.character(pid), ]
     if (nrow(poly) == 0)
       stop(sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
 
@@ -310,48 +322,53 @@ ReadSIGRID3 <- function(shp,
     if ("POLY_TYPE" %in% names(v)) {
       pt_code <- .clean_value(v[["POLY_TYPE"]][1])
       if (!is.na(pt_code) && pt_code != "I") {
-        label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]]
-      else pt_code
+        label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]] else pt_code
         return(paste0("Polygon ", pid, " only contains: ", label, "."))
       }
     }
 
   #---------------------------------------------------------------------------
-    p <- .parse_polygon(shp, polygon_id, id_col)
+    p <- .parse_polygon(shp, pid, id_col)
 
     # area
-    area_raw <- getn("AREA")
-    area_km2 <- if (!is.na(area_raw)) area_raw / 1e6 else NA_real_
+    area_txt <- if (!is.na(p$area_km2)) {
+      format(round(p$area_km2, 2), nsmall = 2, big.mark = ",")
+    } else "not available"
 
     # total sea ice concentration for the polygon
     ct_txt <- if (!is.na(p$ct)) p$ct else "not available"
 
     # Ice  development, form text
     if (length(p$ice_layers) == 0) {
-      layers_txt <- "  - not available"
+      layers_txt <- "  - No partial concentration data available"
     } else {
       layer_lines <- vapply(p$ice_layers, function(layer) {
         if (isTRUE(layer$is_minor)) {
           stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
           paste0("  - < 1/10: ", stage_str)
         } else {
-          conc_str  <- if (!is.na(layer$conc)) layer$conc else "unknown concentration"
+          conc_str  <- if (!is.na(layer$conc))  layer$conc  else "unknown concentration"
           stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
           line <- paste0(conc_str, " in the stage of ", stage_str)
           if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
           paste0("  - ", line)
         }
       }, character(1))
-
       layers_txt <- paste(layer_lines, collapse = "\n")
     }
 
+    cf_line <- if (!is.na(p$cf)) paste0("\n  Predominant/secondary form: ", p$cf) else ""
+
+
     paste0(
       "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2.\n",
-      ct_txt, " of this area is ice-covered, with the following stage distribution:\n",
-      layers_txt
+      ct_txt, " of this area is ice-covered, ",
+      "with the following stage distribution:\n",
+      layers_txt,
+      cf_line
     )
   }
+
   #-Describe polygons --------------------------------------------------------------------------
   descriptions <- vapply(polygon_id, .describe_one, character(1))
   cat(paste(descriptions, collapse = "\n\n"), "\n\n")
@@ -390,4 +407,6 @@ ReadSIGRID3 <- function(shp,
     writeLines(paste0(header, paste(descriptions, collapse = "\n\n")), file_path)
     message("Output saved to: ", file_path)
   }
+
+  invisible(descriptions)
 }
