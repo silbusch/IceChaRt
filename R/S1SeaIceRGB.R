@@ -93,7 +93,7 @@ seaIceRGB <- function(co_pol,
   nodata_cross <- if (!is.null(nodata)) nodata else terra::NAflag(cross_pol)
 
   .mask_nodata <- function(r, nd) {
-    if (length(nd) == 1L && !is.nan(nd) && !is.na(nd)) {
+    if (length(nd) == 1L && !is.na(nd) && !is.nan(nd)) {
       terra::classify(
         r,
         rcl = matrix(c(nd - nodata_tol, nd + nodata_tol, NA_real_), nrow = 1L),
