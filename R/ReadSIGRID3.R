@@ -1,4 +1,4 @@
-# To-Do: Habe mitten in der Problemlösung aufgehört
+# To-Do: Ckeck for FS and FP again in the doc, need to fix text for CF
 
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
