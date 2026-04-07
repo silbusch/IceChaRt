@@ -8,6 +8,11 @@ An R package to help you get started with the topic of sea ice.
 Image: Egg Code [[2](#source2)]
 
 ---
+## PAckage Functions
+
+---
+## Example Workflow
+---
 ## References
 <a name="source1" />
 
