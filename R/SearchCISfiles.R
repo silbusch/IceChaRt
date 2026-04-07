@@ -1,10 +1,13 @@
-#' List of available Ice Chart files
+#' List of available Ice Chart files of the Canadian Ice Service (CIS)
 #'
-#' @param region "East_Coast", “Eastern_Arctic”, "Great_Lakes", “Hudson_Bay”, "Western_Arctic")
+#' This function searches for the weekly ice charts from the CIS
+#' for a specific region and year, and prints the results to the users console.
+#'
+#' @param region "East_Coast", “Eastern_Arctic”, "Great_Lakes", “Hudson_Bay”, "Western_Arctic"
 #' @param year Choose between "2006" to current year
 #' @return data.frame with dataname, URLs, date and version
 #' @export
-searchCISfiles <- function(region = "Eastern_Arctic", year = "2024") {
+search_cis_icechart <- function(region = "Eastern_Arctic", year = "2024") {
 
   valid_regions <- c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
 
