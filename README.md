@@ -1,2 +1,20 @@
 # IceChaRt
-test
+An R package to help you get started with the topic of sea ice.
+
+**IceChaRt** allows users to search for and download sea ice charts, retrieve standardized vector data in the _Sea Ice GeoReferenced Information and Data_ (SIGRID-3) format, and extract egg code information for sea ice classification [[1](#source1), [2](#source2)]. **IceChaRt** also provides a function for colourising Sentinel-1 EW/IW dual-polarisation SAR images into RGB GeoTIFFs following the sea-ice composite by _Martin Raspaud_ and _Mikhail Itkin_, where co-polarisation (HH or VV) and cross-polarisation (HV or VH) are combined to emphasise different stages of sea-ice development [[3](#source3)].
+
+![EggCode](https://github.com/user-attachments/assets/d2147f3a-56b7-46c2-b228-464724da1461 "EggCode")
+
+Image: Egg Code [[2](#source2)]
+
+---
+## References
+<a name="source1" />
+
+- [1] World Meteorological Organization (2017): SIGRID-3: A vector archive format for Sea ICe georeferenced information and data. Version 3.1, WMO/TD-No. 1214. <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf>
+<a name="source2" />
+
+- [2] Government of Canada (2017): The Egg Code. <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/publications/interpreting-charts/chapter-1.html>
+<a name="source3" />
+
+- [3] Raspaud, M., Itkin, M. (2020): SAR-Ice: A Sea Ice RGB Composite. <https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/sar-ice/>
