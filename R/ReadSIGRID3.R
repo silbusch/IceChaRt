@@ -32,7 +32,7 @@ codes <- c(
   # " Otherwise, CFpredominant contains the predominant form of ice and
   # CFsecondary contains the secondary form of ice. If there is no secondary form,
   # then CFsecondary is assigned -9""
-  "CF" = "Predominant and secondary forms of ice"
+  "CF" = "Predominant and secondary forms of ice (CIS schema)"
 )
 
 # Concentration codes for variable identifiers CT, CA, CB, CC (AV, AK, AM, AT)
@@ -141,10 +141,7 @@ poly_type <- c(
   "S" = "Ice Shelf / Ice of Land Origin",
   "-9" = "Not set"
 )
-# Special case for Canadian Ice Service
-cis_schema_CF <- c(
-  "08-9" = "Fast ice"
-)
+
 
 #  Internal helpers
 #--- Handling No Data ----------------------------------------------------------
@@ -159,6 +156,31 @@ cis_schema_CF <- c(
 .clean_numeric <- function(x) {
   if (base::length(x) == 0 || base::is.null(x) || base::is.na(x) || x == "") return(NA_real_)
   base::suppressWarnings(base::as.numeric(x))
+}
+
+# Helper for robust CF extraction
+# Important: preserve leading zeros for codes like "0304"
+.clean_cf <- function(x) {
+  if (base::length(x) == 0 || base::is.null(x) || base::is.na(x) || x == "") {
+    return(NA_character_)
+  }
+
+  x <- base::trimws(base::as.character(x))
+
+  if (x %in% .NOT_SET) return(NA_character_)
+
+  # Keep special CIS patterns unchanged
+  if (base::grepl("^[0-9]{2}-9$", x)) return(x)
+
+  # Keep regular 4-digit CF codes unchanged, e.g. "0304", "0499"
+  if (base::grepl("^[0-9]{4}$", x)) return(x)
+
+  # Repair lost leading zero if CF was read as numeric, e.g. 304 -> "0304"
+  if (base::grepl("^[0-9]{1,4}$", x)) {
+    return(base::sprintf("%04d", base::as.integer(x)))
+  }
+
+  x
 }
 
 # Helper for robust ID extraction from terra::SpatVector
@@ -181,12 +203,8 @@ cis_schema_CF <- c(
     val <- ice_concentration[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
-  if (x %in% base::names(ice_concentration_intervals)) {
-    val <- ice_concentration_intervals[[x]]
-    return(if (val %in% .NOT_SET) NA_character_ else val)
-  }
 
-  x  # return raw code if not in table so nothing is lost
+  x  # return raw code if unknown, so nothing is silently lost
 }
 
 # SIGRID3 Code as string for stage of development
@@ -216,26 +234,69 @@ cis_schema_CF <- c(
   x
 }
 
-# To-Do: ?????CF ist 4-Zeichen-String: ersten zwei Zeichen = FP, letzten 2 = FS????? In Doc schauen
-# Example case in data: e.g. "0499", "10-9", "99-9"
-# first two characters = FP, last two characters = FS
+# CF special case (CIS schema)
+#
+# Priority rules (from the SIGRID-3 / CIS specification):
+#   1. CF == "08-9"  → Fast Ice anywhere in the polygon (immediate return)
+#   2. FP part is a strips-and-patches code (11-20 / 91)
+#      → strips/patches description + secondary assigned -9 (no secondary)
+#   3. Otherwise     → predominant form + optional secondary form
+#
+# Format: 4-character string where
+#   characters 1-2 = FP (predominant form code)
+#   characters 3-4 = FS (secondary form code, "-9" means absent)
+#
+# Known real-world examples: "0499", "10-9", "99-9", "08-9", "19-9", "0304"
 .translate_cf <- function(x) {
-  x <- .clean_value(x)
-  if (base::is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  x <- .clean_cf(x)
+  if (base::is.na(x)) return(NA_character_)
 
-  if (base::nchar(x) == 4) {
-    fp_txt <- .translate_form(base::substr(x, 1, 2))
-    fs_txt <- .translate_form(base::substr(x, 3, 4))
+  # --- Rule 1: Fast Ice anywhere ---
+  if (x == "08-9") return("Fast Ice")
+
+  # Expect a 4-character string (e.g. "0499", "0304")
+  if (base::grepl("^[0-9]{4}$", x)) {
+    fp_code <- base::substr(x, 1, 2)
+    fs_code <- base::substr(x, 3, 4)
+
+    fp_txt <- .translate_form(fp_code)
+
+    # Rule 2: Strips and patches in FP (codes 11-20 and 91)
+    strips_codes <- c(base::sprintf("%02d", 11:20), "91")
+    if (fp_code %in% strips_codes) {
+      # FS is always "-9" in this case per spec, secondary is irrelevant
+      if (base::is.na(fp_txt)) return(NA_character_)
+      return(base::paste0("Strips and Patches - ", fp_txt))
+    }
+
+    # Rule 3: Normal predominant + optional secondary
+    fs_txt <- .translate_form(fs_code)
 
     parts <- c(
-      if (!base::is.na(fp_txt)) base::paste0("Predominant form of ice - ", fp_txt),
-      if (!base::is.na(fs_txt)) base::paste0("Secondary form of ice - ",   fs_txt)
+      if (!base::is.na(fp_txt)) base::paste0("Predominant: ", fp_txt),
+      if (!base::is.na(fs_txt) && fs_code != "-9") base::paste0("Secondary: ", fs_txt)
     )
 
     if (base::length(parts) == 0) return(NA_character_)
     return(base::paste(parts, collapse = ", "))
   }
 
+  # Cases like "10-9", "19-9", "99-9"
+  if (base::grepl("^[0-9]{2}-9$", x)) {
+    fp_code <- base::substr(x, 1, 2)
+    fp_txt <- .translate_form(fp_code)
+
+    strips_codes <- c(base::sprintf("%02d", 11:20), "91")
+    if (fp_code %in% strips_codes) {
+      if (base::is.na(fp_txt)) return(NA_character_)
+      return(base::paste0("Strips and Patches - ", fp_txt))
+    }
+
+    if (base::is.na(fp_txt)) return(NA_character_)
+    return(base::paste0("Predominant: ", fp_txt))
+  }
+
+  # Fallback
   .translate_form(x)
 }
 
@@ -268,7 +329,7 @@ cis_schema_CF <- c(
     if (base::is.na(conc_txt) && base::is.na(stage_txt) && base::is.na(form_txt)) next
 
     layers <- c(layers, base::list(base::list(
-      conc= conc_txt,
+      conc = conc_txt,
       stage = stage_txt,
       form = form_txt,
       is_minor = FALSE
@@ -320,8 +381,9 @@ cis_schema_CF <- c(
     polygon_label = base::as.character(polygon_id),
     area_km2 = area_km2,
     ct = .translate_concentration(getv("CT")),
-    cf = .translate_cf(getv("CF")),
-    ice_layers= .parse_ice_layers(v)
+    # Important: pass raw CF value directly, so .clean_cf() can preserve/repair leading zeros
+    cf = if ("CF" %in% base::names(v)) .translate_cf(v[["CF"]][1]) else NA_character_,
+    ice_layers = .parse_ice_layers(v)
   )
 }
 
@@ -351,7 +413,6 @@ ReadSIGRID3 <- function(shp,
                         save_txt = TRUE,
                         out_path = NULL,
                         out_dir = NULL) {
-
 
   if (!inherits(shp, "SpatVector")) {
     stop("`shp` must be a terra::SpatVector.", call. = FALSE)
@@ -403,7 +464,7 @@ ReadSIGRID3 <- function(shp,
           stage_str <- if (!base::is.na(layer$stage)) layer$stage else "unknown stage"
           base::paste0("  - < 1/10: ", stage_str)
         } else {
-          conc_str <- if (!base::is.na(layer$conc))  layer$conc  else "unknown concentration"
+          conc_str <- if (!base::is.na(layer$conc)) layer$conc else "unknown concentration"
           stage_str <- if (!base::is.na(layer$stage)) layer$stage else "unknown stage"
           line <- base::paste0(conc_str, " in the stage of ", stage_str)
           if (!base::is.na(layer$form)) line <- base::paste0(line, " in the form of ", layer$form)
