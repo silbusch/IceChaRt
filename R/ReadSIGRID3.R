@@ -1,8 +1,9 @@
-# To-Do: Ckeck for FS and FP again in the doc, need to fix text for CF
+# To-Do: merged two lookup tables and need to change the code for this
 
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
 # https://nsidc.org/sites/default/files/documents/other/cis_sigrid3_implementation.pdf
+# https://nsidc.org/sites/default/files/g02171-v001-userguide_1_0.pdf
 
 #--- Lookup tables -------------------------------------------------------------
 codes <- c(
@@ -23,12 +24,20 @@ codes <- c(
   "FC" = "Form of third thickest ice",
   "FP" = "Predominant form of ice",
   "FS" = "Secondary form of ice",
+  # CF is a special case for CIS-schema, representing predominant and secondary forms of ice.
+  # It contains four digits, the first two for CF-predominant and the second two for CF-secondary,
+  # "If fast ice is present anywhere then CF is assigned 08-9"
+  # "Else if strips and patches are present, then CFpredominant contains the strips and
+  # patches details and CF secondary is assigned -9 (e.g. 19-9)"
+  # " Otherwise, CFpredominant contains the predominant form of ice and
+  # CFsecondary contains the secondary form of ice. If there is no secondary form,
+  # then CFsecondary is assigned -9""
   "CF" = "Predominant and secondary forms of ice"
 )
 
-# Concentration codes for variable identifiers CT, CA, CB, and CC.
+# Concentration codes for variable identifiers CT, CA, CB, CC (AV, AK, AM, AT)
 ice_concentration <- c(
-  "00" = "Ice Free",
+  "98" = "Ice Free",
   "01" = "Less than 1/10 of ice (open water)",
   "02" = "Bergy Water",
   "10" = "1/10",
@@ -41,11 +50,6 @@ ice_concentration <- c(
   "80" = "8/10",
   "90" = "9/10",
   "92" = "10/10",
-  "-9" = "Not set"
-)
-
-# Concentration intervals (lowest concentration in interval followed by highest)
-ice_concentration_intervals <- c(
   "91" = "9/10 – 10/10",
   "89" = "8/10 – 9/10",
   "81" = "8/10 – 10/10",
@@ -70,14 +74,19 @@ ice_concentration_intervals <- c(
 # Thickness of ice or stage of development codes for variable identifiers
 # SA, SB, SC, CN, and CD.
 ice_stage_development <- c(
-  "0" = "Ice Free",
+  "01" = "Ice Free",
+  "74" = "New Lake Ice (< 5 cm thickness)",
+  "75" = "Thin Lake Ice (5-15 cm thickness)",
+  "76" = "Medium Lake Ice (15-30 cm thickness)",
+  "77" = "Thick Lake Ice (30- 70 cm thickness)",
+  "78" = "Very Thick Lake ice (> 70 cm thickness)",
   "80" = "No Stage of Development",
   "81" = "New ice",
   "82" = "Nilas / Ice rind (< 10 cm thickness)",
   "83" = "Young ice (10-30 cm thickness)",
   "84" = "Grey ice (10-15 cm thickness)",
   "85" = "Grey-white ice (15-30 cm thickness)",
-  "86" = "First-year ice (30 - 200 cm thickness)",
+  "86" = "First Year Ice (30 - 200 cm thickness)",
   "87" = "Thin First Year Ice (30-70 cm thickness)",
   "88" = "Thin First Year Ice Stage 1 (30-50 cm thickness)",
   "89" = "Thin First Year Ice Stage 2 (50-70 cm thickness)",
@@ -90,7 +99,7 @@ ice_stage_development <- c(
   "96" = "Second Year Ice",
   "97" = "Multi Year Ice",
   "98" = "Glacier Ice",
-  "99" = "undetermined/Unknown",
+  "99" = "Undetermined/Unknown",
   "-9" = "Not set"
 )
 
@@ -119,7 +128,7 @@ ice_form <- c(
   "91" = "Strips and Patches concentrations 9+/10",
   "20" = "Strips and Patches concentrations 10/10",
   #"21" = "Level Ice",
-  "99" = "undetermined/Unknown",
+  "99" = "Undetermined/Unknown",
   "-9" = "Not set"
 )
 
@@ -131,6 +140,10 @@ poly_type <- c(
   "N" = "No Data",
   "S" = "Ice Shelf / Ice of Land Origin",
   "-9" = "Not set"
+)
+# Special case for Canadian Ice Service
+cis_schema_CF <- c(
+  "08-9" = "Fast ice"
 )
 
 #  Internal helpers
