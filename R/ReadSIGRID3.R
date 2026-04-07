@@ -2,7 +2,7 @@
 
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
-
+# https://nsidc.org/sites/default/files/documents/other/cis_sigrid3_implementation.pdf
 
 #--- Lookup tables -------------------------------------------------------------
 codes <- c(
@@ -139,22 +139,22 @@ poly_type <- c(
 .NOT_SET <- c("-9", "Not set", "")
 
 .clean_value <- function(x) {
-  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") return(NA_character_)
-  trimws(as.character(x))
+  if (base::length(x) == 0 || base::is.null(x) || base::is.na(x) || x == "") return(NA_character_)
+  base::trimws(base::as.character(x))
 }
 
 .clean_numeric <- function(x) {
-  if (length(x) == 0 || is.null(x) || is.na(x) || x == "") return(NA_real_)
-  suppressWarnings(as.numeric(x))
+  if (base::length(x) == 0 || base::is.null(x) || base::is.na(x) || x == "") return(NA_real_)
+  base::suppressWarnings(base::as.numeric(x))
 }
 
 # Helper for robust ID extraction from terra::SpatVector
 # Important: do not use shp[[id_col]] directly for matching
 .get_ids <- function(shp, id_col) {
-  if (!(id_col %in% names(shp))) {
-    stop(sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
+  if (!(id_col %in% base::names(shp))) {
+    stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
   }
-  trimws(as.character(terra::values(shp)[[id_col]]))
+  base::trimws(base::as.character(terra::values(shp)[[id_col]]))
 }
 
 #--- Reading SIGRID3 code ------------------------------------------------------
@@ -162,14 +162,13 @@ poly_type <- c(
 # SIGRID3 Code as string for ice concentration
 .translate_concentration <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (base::is.na(x) || x %in% .NOT_SET) return(NA_character_)
 
-  if (x %in% names(ice_concentration)) {
+  if (x %in% base::names(ice_concentration)) {
     val <- ice_concentration[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
-
-  if (x %in% names(ice_concentration_intervals)) {
+  if (x %in% base::names(ice_concentration_intervals)) {
     val <- ice_concentration_intervals[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
@@ -181,47 +180,47 @@ poly_type <- c(
 # return raw code if not in table (so nothing is lost)
 .translate_stage <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (base::is.na(x) || x %in% .NOT_SET) return(NA_character_)
 
-  if (x %in% names(ice_stage_development)) {
+  if (x %in% base::names(ice_stage_development)) {
     val <- ice_stage_development[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
 
-  x  # return raw code if not in table so nothing lost
+  x
 }
 
 # SIGRID3 Code as string for ice form
 .translate_form <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (base::is.na(x) || x %in% .NOT_SET) return(NA_character_)
 
-  if (x %in% names(ice_form)) {
+  if (x %in% base::names(ice_form)) {
     val <- ice_form[[x]]
     return(if (val %in% .NOT_SET) NA_character_ else val)
   }
 
-  x  # raw code as fallback
+  x
 }
 
 # To-Do: ?????CF ist 4-Zeichen-String: ersten zwei Zeichen = FP, letzten 2 = FS????? In Doc schauen
+# Example case in data: e.g. "0499", "10-9", "99-9"
+# first two characters = FP, last two characters = FS
 .translate_cf <- function(x) {
   x <- .clean_value(x)
-  if (is.na(x) || x %in% .NOT_SET) return(NA_character_)
+  if (base::is.na(x) || x %in% .NOT_SET) return(NA_character_)
 
-  # Example case in data: e.g. "0499", "10-9", "99-9"
-  # first two characters = FP, last two characters = FS
-  if (nchar(x) == 4) {
-    fp_txt <- .translate_form(substr(x, 1, 2))
-    fs_txt <- .translate_form(substr(x, 3, 4))
+  if (base::nchar(x) == 4) {
+    fp_txt <- .translate_form(base::substr(x, 1, 2))
+    fs_txt <- .translate_form(base::substr(x, 3, 4))
 
     parts <- c(
-      if (!is.na(fp_txt)) paste0("Predominant form of ice - ", fp_txt),
-      if (!is.na(fs_txt)) paste0("secondary form of ice - ", fs_txt)
+      if (!base::is.na(fp_txt)) base::paste0("Predominant form of ice - ", fp_txt),
+      if (!base::is.na(fs_txt)) base::paste0("Secondary form of ice - ",   fs_txt)
     )
 
-    if (length(parts) == 0) return(NA_character_)
-    return(paste(parts, collapse = ", "))
+    if (base::length(parts) == 0) return(NA_character_)
+    return(base::paste(parts, collapse = ", "))
   }
 
   .translate_form(x)
@@ -235,30 +234,30 @@ poly_type <- c(
 .parse_ice_layers <- function(v) {
 
   getraw <- function(col) {
-    if (col %in% names(v)) .clean_value(v[[col]][1]) else NA_character_
+    if (col %in% base::names(v)) .clean_value(v[[col]][1]) else NA_character_
   }
 
-  layers <- list()
+  layers <- base::list()
 
   # Regular layers combination: CA/SA/FA, CB/SB/FB, CC/SC/FC
-  triplets <- list(
+  triplets <- base::list(
     c(conc = "CA", stage = "SA", form = "FA"),
     c(conc = "CB", stage = "SB", form = "FB"),
     c(conc = "CC", stage = "SC", form = "FC")
   )
 
   for (tri in triplets) {
-    conc_txt  <- .translate_concentration(getraw(tri["conc"]))
+    conc_txt <- .translate_concentration(getraw(tri["conc"]))
     stage_txt <- .translate_stage(getraw(tri["stage"]))
-    form_txt  <- .translate_form(getraw(tri["form"]))
+    form_txt <- .translate_form(getraw(tri["form"]))
 
     # Skip if nothing meaningful in this column
-    if (is.na(conc_txt) && is.na(stage_txt) && is.na(form_txt)) next
+    if (base::is.na(conc_txt) && base::is.na(stage_txt) && base::is.na(form_txt)) next
 
-    layers <- c(layers, list(list(
-      conc     = conc_txt,
-      stage    = stage_txt,
-      form     = form_txt,
+    layers <- c(layers, base::list(base::list(
+      conc= conc_txt,
+      stage = stage_txt,
+      form = form_txt,
       is_minor = FALSE
     )))
   }
@@ -267,11 +266,11 @@ poly_type <- c(
   # CF is the polygon-wide predominant/secondary form --> stored separately.
   for (col in c("CN", "CD")) {
     stage_txt <- .translate_stage(getraw(col))
-    if (!is.na(stage_txt)) {
-      layers <- c(layers, list(list(
-        conc     = NA_character_,
-        stage    = stage_txt,
-        form     = NA_character_,
+    if (!base::is.na(stage_txt)) {
+      layers <- c(layers, base::list(base::list(
+        conc = NA_character_,
+        stage = stage_txt,
+        form = NA_character_,
         is_minor = TRUE
       )))
     }
@@ -286,32 +285,30 @@ poly_type <- c(
     stop("`shp` must be a terra::SpatVector.", call. = FALSE)
 
   ids <- .get_ids(shp, id_col)
-  hit <- ids == trimws(as.character(polygon_id))
+  hit <- ids == base::trimws(base::as.character(polygon_id))
 
   poly <- shp[hit, ]
-  if (nrow(poly) == 0) {
-    stop(sprintf("No polygon with %s == %s found.", id_col, polygon_id),
-         call. = FALSE)
+  if (base::nrow(poly) == 0) {
+    stop(base::sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
   }
 
-  v <- as.data.frame(poly)[1, , drop = FALSE]
+  v <- base::as.data.frame(poly)[1, , drop = FALSE]
 
   getv <- function(col)
-    if (col %in% names(v)) .clean_value(v[[col]][1]) else NA_character_
+    if (col %in% base::names(v)) .clean_value(v[[col]][1]) else NA_character_
 
   getn <- function(col)
-    if (col %in% names(v)) .clean_numeric(v[[col]][1]) else NA_real_
+    if (col %in% base::names(v)) .clean_numeric(v[[col]][1]) else NA_real_
 
-  # Convert area from m² to km²
   area_raw <- getn("AREA")
-  area_km2 <- if (!is.na(area_raw)) area_raw / 1e6 else NA_real_
+  area_km2 <- if (!base::is.na(area_raw)) area_raw / 1e6 else NA_real_
 
-  list(
-    polygon_label = as.character(polygon_id),
-    area_km2      = area_km2,
-    ct            = .translate_concentration(getv("CT")),
-    cf            = .translate_cf(getv("CF")),
-    ice_layers    = .parse_ice_layers(v)
+  base::list(
+    polygon_label = base::as.character(polygon_id),
+    area_km2 = area_km2,
+    ct = .translate_concentration(getv("CT")),
+    cf = .translate_cf(getv("CF")),
+    ice_layers= .parse_ice_layers(v)
   )
 }
 
@@ -328,7 +325,10 @@ poly_type <- c(
 #' @param polygon_id A single ID or vector of IDs identifying the target polygon(s).
 #' @param id_col     Name of the column holding polygon IDs (default: \code{"ID_NEW"}).
 #' @param save_txt   Logical. If \code{TRUE}, output is saved as a .txt file.
-#' @param file_path  Optional path for the output file. Auto-generated if \code{NULL}.
+#' @param out_path   Optional full file path for the output \code{.txt} file. If \code{NULL},
+#'   the file is saved automatically to \code{IceChaRt_output/SIGRID3_text/} with a timestamp.
+#' @param out_dir    Optional base directory for automatic output. If \code{NULL}, the current
+#'   working directory is used. Ignored when \code{out_path} is provided.
 #'
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
@@ -336,34 +336,35 @@ ReadSIGRID3 <- function(shp,
                         polygon_id,
                         id_col = "ID_NEW",
                         save_txt = TRUE,
-                        file_path = NULL) {
+                        out_path = NULL,
+                        out_dir = NULL) {
+
 
   if (!inherits(shp, "SpatVector")) {
     stop("`shp` must be a terra::SpatVector.", call. = FALSE)
   }
-
-  if (!(id_col %in% names(shp))) {
-    stop(sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
+  if (!(id_col %in% base::names(shp))) {
+    stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
   }
 
   .describe_one <- function(pid) {
 
     ids <- .get_ids(shp, id_col)
-    hit <- ids == trimws(as.character(pid))
+    hit <- ids == base::trimws(base::as.character(pid))
 
     poly <- shp[hit, ]
-    if (nrow(poly) == 0) {
-      stop(sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
+    if (base::nrow(poly) == 0) {
+      stop(base::sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
     }
 
-    v <- as.data.frame(poly)[1, , drop = FALSE]
+    v <- base::as.data.frame(poly)[1, , drop = FALSE]
 
     # Early exit for non-ice polygons (Land, Water, No Data, Ice Shelf)
-    if ("POLY_TYPE" %in% names(v)) {
+    if ("POLY_TYPE" %in% base::names(v)) {
       pt_code <- .clean_value(v[["POLY_TYPE"]][1])
-      if (!is.na(pt_code) && pt_code != "I") {
-        label <- if (pt_code %in% names(poly_type)) poly_type[[pt_code]] else pt_code
-        return(paste0("Polygon ", pid, " only contains: ", label, "."))
+      if (!base::is.na(pt_code) && pt_code != "I") {
+        label <- if (pt_code %in% base::names(poly_type)) poly_type[[pt_code]] else pt_code
+        return(base::paste0("Polygon ", pid, " only contains: ", label, "."))
       }
     }
 
@@ -371,42 +372,42 @@ ReadSIGRID3 <- function(shp,
     p <- .parse_polygon(shp, pid, id_col)
 
     # area
-    area_txt <- if (!is.na(p$area_km2)) {
-      format(round(p$area_km2, 2), nsmall = 2, big.mark = ",")
+    area_txt <- if (!base::is.na(p$area_km2)) {
+      base::format(base::round(p$area_km2, 2), nsmall = 2, big.mark = ",")
     } else {
       "not available"
     }
 
     # total sea ice concentration for the polygon
-    ct_txt <- if (!is.na(p$ct)) p$ct else "not available"
+    ct_txt <- if (!base::is.na(p$ct)) p$ct else "not available"
 
     # Ice development, form text
-    if (length(p$ice_layers) == 0) {
+    if (base::length(p$ice_layers) == 0) {
       layers_txt <- "  - No partial concentration data available"
     } else {
-      layer_lines <- vapply(p$ice_layers, function(layer) {
-        if (isTRUE(layer$is_minor)) {
-          stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-          paste0("  - < 1/10: ", stage_str)
+      layer_lines <- base::vapply(p$ice_layers, function(layer) {
+        if (base::isTRUE(layer$is_minor)) {
+          stage_str <- if (!base::is.na(layer$stage)) layer$stage else "unknown stage"
+          base::paste0("  - < 1/10: ", stage_str)
         } else {
-          conc_str  <- if (!is.na(layer$conc)) layer$conc else "unknown concentration"
-          stage_str <- if (!is.na(layer$stage)) layer$stage else "unknown stage"
-          line <- paste0(conc_str, " in the stage of ", stage_str)
-          if (!is.na(layer$form)) line <- paste0(line, " in the form of ", layer$form)
-          paste0("  - ", line)
+          conc_str <- if (!base::is.na(layer$conc))  layer$conc  else "unknown concentration"
+          stage_str <- if (!base::is.na(layer$stage)) layer$stage else "unknown stage"
+          line <- base::paste0(conc_str, " in the stage of ", stage_str)
+          if (!base::is.na(layer$form)) line <- base::paste0(line, " in the form of ", layer$form)
+          base::paste0("  - ", line)
         }
-      }, character(1))
+      }, base::character(1))
 
-      layers_txt <- paste(layer_lines, collapse = "\n")
+      layers_txt <- base::paste(layer_lines, collapse = "\n")
     }
 
-    cf_line <- if (!is.na(p$cf)) {
-      paste0("\n  Predominant/secondary form: ", p$cf)
+    cf_line <- if (!base::is.na(p$cf)) {
+      base::paste0("\n  Predominant/secondary form: ", p$cf)
     } else {
       ""
     }
 
-    paste0(
+    base::paste0(
       "Polygon ", p$polygon_label, " covers ", area_txt, " km\u00b2.\n",
       ct_txt, " of this area is ice-covered, ",
       "with the following stage distribution:\n",
@@ -416,46 +417,45 @@ ReadSIGRID3 <- function(shp,
   }
 
   # -Describe polygons ---------------------------------------------------------
-  descriptions <- vapply(polygon_id, .describe_one, character(1))
-  cat(paste(descriptions, collapse = "\n\n"), "\n\n")
+  descriptions <- base::vapply(polygon_id, .describe_one, base::character(1))
+  base::cat(base::paste(descriptions, collapse = "\n\n"), "\n\n")
 
   # --- Optional: save as .txt -------------------------------------------------
   if (save_txt) {
-    if (is.null(file_path)) {
-      main_dir <- file.path(getwd(), "IceChaRt_output")
-      out_dir  <- file.path(main_dir, "SIGRID3_text")
+    if (base::is.null(out_path)) {
+      main_dir <- base::file.path(if (!base::is.null(out_dir)) out_dir else base::getwd(), "IceChaRt_output")
+      out_dir <- base::file.path(main_dir, "SIGRID3_text")
 
       for (d in c(main_dir, out_dir)) {
-        if (!dir.exists(d)) {
-          dir.create(d, recursive = TRUE)
-          message("Created directory: ", d)
+        if (!base::dir.exists(d)) {
+          base::dir.create(d, recursive = TRUE)
+          base::message("Created directory: ", d)
         }
       }
 
-      timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-      file_path <- file.path(out_dir, paste0("IceChaRt_SIGRID3_", timestamp, ".txt"))
+      timestamp <- base::format(base::Sys.time(), "%Y%m%d_%H%M%S")
+      out_path <- base::file.path(out_dir, base::paste0("IceChaRt_SIGRID3_", timestamp, ".txt"))
     } else {
-      out_dir <- dirname(file_path)
-      if (!dir.exists(out_dir)) {
-        dir.create(out_dir, recursive = TRUE)
-        message("Created output directory: ", out_dir)
+      out_dir <- base::dirname(out_path)
+      if (!base::dir.exists(out_dir)) {
+        base::dir.create(out_dir, recursive = TRUE)
+        base::message("Created directory: ", out_dir)
       }
-
-      if (!grepl("\\.txt$", file_path, ignore.case = TRUE)) {
-        file_path <- paste0(file_path, ".txt")
+      if (!base::grepl("\\.txt$", out_path, ignore.case = TRUE)) {
+        out_path <- base::paste0(out_path, ".txt")
       }
     }
 
-    header <- paste0(
+    header <- base::paste0(
       "IceChaRt - Sea Ice Polygon Description\n",
-      "Generated: ", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n",
-      "Polygons:  ", paste(polygon_id, collapse = ", "), "\n",
-      strrep("-", 50), "\n\n"
+      "Generated: ", base::format(base::Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n",
+      "Polygons:  ", base::paste(polygon_id, collapse = ", "), "\n",
+      base::strrep("-", 50), "\n\n"
     )
 
-    writeLines(paste0(header, paste(descriptions, collapse = "\n\n")), file_path)
-    message("Output saved to: ", file_path)
+    base::writeLines(base::paste0(header, base::paste(descriptions, collapse = "\n\n")), out_path)
+    base::message("Output saved to: ", out_path)
   }
 
-  invisible(descriptions)
+  base::invisible(descriptions)
 }
