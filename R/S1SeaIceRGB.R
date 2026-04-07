@@ -143,7 +143,7 @@ seaIceRGB <- function(co_pol,
 # Output path handling
   if (is.null(output_path)) {
     main_dir   <- file.path(getwd(), "IceChaRt_output")
-    output_dir <- file.path(main_dir, "rgb")
+    output_dir <- file.path(main_dir, "s1_rgb")
 
     for (d in c(main_dir, output_dir)) {
       if (!dir.exists(d)) {
