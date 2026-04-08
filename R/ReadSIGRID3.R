@@ -6,7 +6,7 @@
 # https://nsidc.org/sites/default/files/g02171-v001-userguide_1_0.pdf
 
 #--- Lookup tables -------------------------------------------------------------
-codes <- c(
+codes <- base::c(
   "AREA" = "Area of polygon feature",
   "PERIMETER" = "Perimeter length of polygon feature",
   "POLY_TYPE" = "Type of polygon feature",
@@ -36,7 +36,7 @@ codes <- c(
 )
 
 # Concentration codes for variable identifiers CT, CA, CB, CC (AV, AK, AM, AT)
-ice_concentration <- c(
+ice_concentration <- base::c(
   "98" = "Ice Free",
   "01" = "Less than 1/10 of ice (open water)",
   "02" = "Bergy Water",
@@ -73,7 +73,7 @@ ice_concentration <- c(
 
 # Thickness of ice or stage of development codes for variable identifiers
 # SA, SB, SC, CN, and CD.
-ice_stage_development <- c(
+ice_stage_development <- base::c(
   "01" = "Ice Free",
   "74" = "New Lake Ice (< 5 cm thickness)",
   "75" = "Thin Lake Ice (5-15 cm thickness)",
@@ -104,7 +104,7 @@ ice_stage_development <- c(
 )
 
 # Form of ice codes for variable identifiers FA, FB, FC, FP and FS.
-ice_form <- c(
+ice_form <- base::c(
   "01" = "Pancake Ice (30 cm - 3 m)",
   "02" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
   "03" = "Ice Cake (< 20 m across)",
@@ -133,7 +133,7 @@ ice_form <- c(
 )
 
 # List of Poly_type character variables
-poly_type <- c(
+poly_type <- base::c(
   "L" = "Land",
   "W" = "Water (sea ice free)",
   "I" = "Ice – of any concentration",
@@ -146,7 +146,7 @@ poly_type <- c(
 #  Internal helpers
 #--- Handling No Data ----------------------------------------------------------
 
-.NOT_SET <- c("-9", "Not set", "")
+.NOT_SET <- base::c("-9", "Not set", "")
 
 .clean_value <- function(x) {
   if (base::length(x) == 0 || base::is.null(x) || base::is.na(x) || x == "") return(NA_character_)
@@ -187,7 +187,7 @@ poly_type <- c(
 # Important: do not use shp[[id_col]] directly for matching
 .get_ids <- function(shp, id_col) {
   if (!(id_col %in% base::names(shp))) {
-    stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
+    base::stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
   }
   base::trimws(base::as.character(terra::values(shp)[[id_col]]))
 }
@@ -262,7 +262,7 @@ poly_type <- c(
     fp_txt <- .translate_form(fp_code)
 
     # Rule 2: Strips and patches in FP (codes 11-20 and 91)
-    strips_codes <- c(base::sprintf("%02d", 11:20), "91")
+    strips_codes <- base::c(base::sprintf("%02d", 11:20), "91")
     if (fp_code %in% strips_codes) {
       # FS is always "-9" in this case per spec, secondary is irrelevant
       if (base::is.na(fp_txt)) return(NA_character_)
@@ -272,7 +272,7 @@ poly_type <- c(
     # Rule 3: Normal predominant + optional secondary
     fs_txt <- .translate_form(fs_code)
 
-    parts <- c(
+    parts <- base::c(
       if (!base::is.na(fp_txt)) base::paste0("Predominant: ", fp_txt),
       if (!base::is.na(fs_txt) && fs_code != "-9") base::paste0("Secondary: ", fs_txt)
     )
@@ -286,7 +286,7 @@ poly_type <- c(
     fp_code <- base::substr(x, 1, 2)
     fp_txt <- .translate_form(fp_code)
 
-    strips_codes <- c(base::sprintf("%02d", 11:20), "91")
+    strips_codes <- base::c(base::sprintf("%02d", 11:20), "91")
     if (fp_code %in% strips_codes) {
       if (base::is.na(fp_txt)) return(NA_character_)
       return(base::paste0("Strips and Patches - ", fp_txt))
@@ -315,9 +315,9 @@ poly_type <- c(
 
   # Regular layers combination: CA/SA/FA, CB/SB/FB, CC/SC/FC
   triplets <- base::list(
-    c(conc = "CA", stage = "SA", form = "FA"),
-    c(conc = "CB", stage = "SB", form = "FB"),
-    c(conc = "CC", stage = "SC", form = "FC")
+    base::c(conc = "CA", stage = "SA", form = "FA"),
+    base::c(conc = "CB", stage = "SB", form = "FB"),
+    base::c(conc = "CC", stage = "SC", form = "FC")
   )
 
   for (tri in triplets) {
@@ -328,7 +328,7 @@ poly_type <- c(
     # Skip if nothing meaningful in this column
     if (base::is.na(conc_txt) && base::is.na(stage_txt) && base::is.na(form_txt)) next
 
-    layers <- c(layers, base::list(base::list(
+    layers <- base::c(layers, base::list(base::list(
       conc = conc_txt,
       stage = stage_txt,
       form = form_txt,
@@ -338,10 +338,10 @@ poly_type <- c(
 
   # minor layers: CN and CD (concentration < 1/10, stage only)
   # CF is the polygon-wide predominant/secondary form --> stored separately.
-  for (col in c("CN", "CD")) {
+  for (col in base::c("CN", "CD")) {
     stage_txt <- .translate_stage(getraw(col))
     if (!base::is.na(stage_txt)) {
-      layers <- c(layers, base::list(base::list(
+      layers <- base::c(layers, base::list(base::list(
         conc = NA_character_,
         stage = stage_txt,
         form = NA_character_,
@@ -355,15 +355,15 @@ poly_type <- c(
 
 # Return list of all values
 .parse_polygon <- function(shp, polygon_id, id_col) {
-  if (!inherits(shp, "SpatVector"))
-    stop("`shp` must be a terra::SpatVector.", call. = FALSE)
+  if (!base::inherits(shp, "SpatVector"))
+    base::stop("`shp` must be a terra::SpatVector.", call. = FALSE)
 
   ids <- .get_ids(shp, id_col)
   hit <- ids == base::trimws(base::as.character(polygon_id))
 
   poly <- shp[hit, ]
   if (base::nrow(poly) == 0) {
-    stop(base::sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
+    base::stop(base::sprintf("No polygon with %s == %s found.", id_col, polygon_id), call. = FALSE)
   }
 
   v <- base::as.data.frame(poly)[1, , drop = FALSE]
@@ -408,17 +408,17 @@ poly_type <- c(
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
 read_sigrid3 <- function(shp,
-                        polygon_id,
-                        id_col = "ID_NEW",
-                        save_txt = TRUE,
-                        out_path = NULL,
-                        out_dir = NULL) {
+                         polygon_id,
+                         id_col = "ID_NEW",
+                         save_txt = TRUE,
+                         out_path = NULL,
+                         out_dir = NULL) {
 
-  if (!inherits(shp, "SpatVector")) {
-    stop("`shp` must be a terra::SpatVector.", call. = FALSE)
+  if (!base::inherits(shp, "SpatVector")) {
+    base::stop("`shp` must be a terra::SpatVector.", call. = FALSE)
   }
   if (!(id_col %in% base::names(shp))) {
-    stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
+    base::stop(base::sprintf("ID column '%s' not found in `shp`.", id_col), call. = FALSE)
   }
 
   .describe_one <- function(pid) {
@@ -428,7 +428,7 @@ read_sigrid3 <- function(shp,
 
     poly <- shp[hit, ]
     if (base::nrow(poly) == 0) {
-      stop(base::sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
+      base::stop(base::sprintf("No polygon with %s == %s found.", id_col, pid), call. = FALSE)
     }
 
     v <- base::as.data.frame(poly)[1, , drop = FALSE]
@@ -500,7 +500,7 @@ read_sigrid3 <- function(shp,
       main_dir <- base::file.path(if (!base::is.null(out_dir)) out_dir else base::getwd(), "IceChaRt_output")
       out_dir <- base::file.path(main_dir, "SIGRID3_text")
 
-      for (d in c(main_dir, out_dir)) {
+      for (d in base::c(main_dir, out_dir)) {
         if (!base::dir.exists(d)) {
           base::dir.create(d, recursive = TRUE)
           base::message("Created directory: ", d)
