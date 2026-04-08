@@ -20,15 +20,15 @@
 #'
 #' @export
 download_cis_icechart <- function(target_date = "2020-11-02",
-                               region     = "Eastern_Arctic",
-                               out_dir  = NULL) {
+                                  region     = "Eastern_Arctic",
+                                  out_dir  = NULL) {
 
-  valid_regions <- c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
+  valid_regions <- base::c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
 
   if (!region %in% valid_regions) {
-    stop(
+    base::stop(
       "Invalid `region`: '", region, "'.\n",
-      "Valid regions are: ", paste(valid_regions, collapse = ", "), "\n",
+      "Valid regions are: ", base::paste(valid_regions, collapse = ", "), "\n",
       call. = FALSE
     )
   }
@@ -36,14 +36,13 @@ download_cis_icechart <- function(target_date = "2020-11-02",
 
   target_date <- base::as.Date(target_date)
   year <- base::format(target_date, "%Y")
-  files <- searchCISfiles(region, year)
-  match <- files[files$datum == target_date & files$standard, ]
+  files <- search_cis_icechart(region, year)
   match <- files[files$datum == target_date & files$standard, ]
 
   if (base::nrow(match) == 0) {
-    stop("No Chart for ", target_date, " in region '", region, "' found.\n",
-         "Please select one of the alternative date: ",
-         base::paste(files$datum[files$standard], collapse = ", "),
+    base::stop("No Chart for ", target_date, " in region '", region, "' found.\n",
+               "Please select one of the alternative date: ",
+               base::paste(files$datum[files$standard], collapse = ", "),
     )
   }
   # Output directory handling
@@ -55,7 +54,7 @@ download_cis_icechart <- function(target_date = "2020-11-02",
     output_dir <- base::file.path(main_dir, "icechart_cis")
   }
 
-  for (d in c(main_dir, output_dir)) {
+  for (d in base::c(main_dir, output_dir)) {
     if (!base::dir.exists(d)) {
       base::dir.create(d, recursive = TRUE)
       base::message("Created directory: ", d)
@@ -85,13 +84,13 @@ download_cis_icechart <- function(target_date = "2020-11-02",
 
   shp_files <- base::list.files(unzip_dir, pattern = "\\.shp$", full.names = TRUE, recursive = TRUE)
   if (base::length(shp_files) == 0) {
-    stop("No shapefile found in the archive: ", destfile, call. = FALSE)
+    base::stop("No shapefile found in the archive: ", destfile, call. = FALSE)
   }
 
   # Load, add unique IDs, reorder columns
   ice <- sf::st_read(shp_files[1], quiet = TRUE)
   ice$ID_NEW <- base::seq_len(base::nrow(ice))
-  ice <- ice[, c("ID_NEW", base::setdiff(base::names(ice), c("ID_NEW", "geometry")), "geometry")]
+  ice <- ice[, base::c("ID_NEW", base::setdiff(base::names(ice), base::c("ID_NEW", "geometry")), "geometry")]
 
   # save as gpkg with the new IDs
   final_gpkg <- base::file.path(
