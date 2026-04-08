@@ -41,22 +41,22 @@
 
 seaice_studyarea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
   # Input validation
-  if (!inherits(shp, "SpatVector")) {
-    stop("'shp' must be a terra::SpatVector object. Load it with terra::vect().", call. = FALSE)
+  if (!base::inherits(shp, "SpatVector")) {
+    base::stop("'shp' must be a terra::SpatVector object. Load it with terra::vect().", call. = FALSE)
   }
-  if (!inherits(tif, "SpatRaster")) {
-    stop("'tif' must be a terra::SpatRaster object. Load it with terra::rast().", call. = FALSE)
+  if (!base::inherits(tif, "SpatRaster")) {
+    base::stop("'tif' must be a terra::SpatRaster object. Load it with terra::rast().", call. = FALSE)
   }
 
   # land_mask validation
   if (land_mask) {
-    if (!land_col %in% names(shp)) {
-      stop("Column '", land_col, "' not found in SpatVector. Available columns: ",
-           paste(names(shp), collapse = ", "), call. = FALSE)
+    if (!land_col %in% base::names(shp)) {
+      base::stop("Column '", land_col, "' not found in SpatVector. Available columns: ",
+                 base::paste(base::names(shp), collapse = ", "), call. = FALSE)
     }
     land_polygons <- shp[shp[[land_col]] == land_val, ]
-    if (nrow(land_polygons) == 0) {
-      warning("No polygons with '", land_col, " == ", land_val, "' found. Land mask skipped.")
+    if (base::nrow(land_polygons) == 0) {
+      base::warning("No polygons with '", land_col, " == ", land_val, "' found. Land mask skipped.")
       land_mask <- FALSE
     }
   }
@@ -64,21 +64,21 @@ seaice_studyarea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = N
   shp_crs <- terra::crs(shp)
   tif_crs <- terra::crs(tif)
 
-  message("CRS SpatVector:\n", shp_crs, "\n")
-  message("CRS SpatRaster:\n", tif_crs, "\n")
+  base::message("CRS SpatVector:\n", shp_crs, "\n")
+  base::message("CRS SpatRaster:\n", tif_crs, "\n")
 
-  if (is.na(shp_crs) || shp_crs == "") {
-    stop("The SpatVector has no defined coordinate reference system.", call. = FALSE)
+  if (base::is.na(shp_crs) || shp_crs == "") {
+    base::stop("The SpatVector has no defined coordinate reference system.", call. = FALSE)
   }
 
-  if (is.na(tif_crs) || tif_crs == "") {
-    message("The SpatRaster has no defined CRS. Assigning the CRS of the SpatVector.")
+  if (base::is.na(tif_crs) || tif_crs == "") {
+    base::message("The SpatRaster has no defined CRS. Assigning the CRS of the SpatVector.")
     terra::crs(tif) <- shp_crs
   } else if (shp_crs != tif_crs) {
-    message("CRS do not match. Reprojecting SpatRaster to the CRS of the SpatVector.")
+    base::message("CRS do not match. Reprojecting SpatRaster to the CRS of the SpatVector.")
     tif <- terra::project(tif, shp_crs)
   } else {
-    message("CRS match.")
+    base::message("CRS match.")
   }
 
   # Crop & land mask
@@ -86,51 +86,51 @@ seaice_studyarea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = N
   shp_clipped <- terra::crop(shp, tif_ext)
 
   if (land_mask) {
-    message("Applying land mask using '", land_col, " == ", land_val, "'...")
+    base::message("Applying land mask using '", land_col, " == ", land_val, "'...")
     land_polygons <- terra::crop(land_polygons, tif_ext)
     tif <- terra::mask(tif, land_polygons, inverse = TRUE)
-    message("Land mask applied.")
+    base::message("Land mask applied.")
   }
 
-    # Output path handling
-    timestamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+  # Output path handling
+  timestamp <- base::format(base::Sys.time(), "%Y%m%d_%H%M%S")
 
-    if (is.null(out_path)) {
-      main_dir   <- file.path(if (!is.null(out_dir)) out_dir else getwd(), "IceChaRt_output")
-      output_dir <- file.path(main_dir, "study_area")
-      for (d in c(main_dir, output_dir)) {
-        if (!dir.exists(d)) {
-          dir.create(d, recursive = TRUE)
-          message("Created directory: ", d)
-        }
+  if (base::is.null(out_path)) {
+    main_dir   <- base::file.path(if (!base::is.null(out_dir)) out_dir else base::getwd(), "IceChaRt_output")
+    output_dir <- base::file.path(main_dir, "study_area")
+    for (d in base::c(main_dir, output_dir)) {
+      if (!base::dir.exists(d)) {
+        base::dir.create(d, recursive = TRUE)
+        base::message("Created directory: ", d)
       }
-      shp_file <- file.path(output_dir, paste0("clipped_icechart_", timestamp, ".gpkg"))
-      tif_file <- file.path(output_dir, paste0("masked_raster_",   timestamp, ".tif"))
-    } else {
-
-      # Validate format
-      supported_formats <- c(".shp", ".gpkg", ".geojson", ".json", ".kml", ".gml", ".fgb")
-      ext <- paste0(".", tolower(tools::file_ext(out_path)))
-      if (!ext %in% supported_formats) {
-        stop("Unsupported output format: '", ext, "'.\n",
-             "Supported formats: ", paste(supported_formats, collapse = ", "), call. = FALSE)
-      }
-      output_dir <- dirname(out_path)
-      if (!dir.exists(output_dir)) {
-        dir.create(output_dir, recursive = TRUE)
-        message("Created output directory: ", output_dir)
-      }
-      shp_file <- out_path
-      tif_file <- file.path(output_dir, paste0("masked_raster_", timestamp, ".tif"))
     }
+    shp_file <- base::file.path(output_dir, base::paste0("clipped_icechart_", timestamp, ".gpkg"))
+    tif_file <- base::file.path(output_dir, base::paste0("masked_raster_",   timestamp, ".tif"))
+  } else {
 
-    terra::writeVector(shp_clipped, shp_file, overwrite = TRUE)
-    message("Vector written to: ", shp_file)
-
-    if (land_mask) {
-      terra::writeRaster(tif, tif_file, overwrite = TRUE)
-      message("Raster written to: ", tif_file)
+    # Validate format
+    supported_formats <- base::c(".shp", ".gpkg", ".geojson", ".json", ".kml", ".gml", ".fgb")
+    ext <- base::paste0(".", base::tolower(tools::file_ext(out_path)))
+    if (!ext %in% supported_formats) {
+      base::stop("Unsupported output format: '", ext, "'.\n",
+                 "Supported formats: ", base::paste(supported_formats, collapse = ", "), call. = FALSE)
     }
-
-    list(shp = shp_clipped, tif = tif)
+    output_dir <- base::dirname(out_path)
+    if (!base::dir.exists(output_dir)) {
+      base::dir.create(output_dir, recursive = TRUE)
+      base::message("Created output directory: ", output_dir)
+    }
+    shp_file <- out_path
+    tif_file <- base::file.path(output_dir, base::paste0("masked_raster_", timestamp, ".tif"))
   }
+
+  terra::writeVector(shp_clipped, shp_file, overwrite = TRUE)
+  base::message("Vector written to: ", shp_file)
+
+  if (land_mask) {
+    terra::writeRaster(tif, tif_file, overwrite = TRUE)
+    base::message("Raster written to: ", tif_file)
+  }
+
+  base::list(shp = shp_clipped, tif = tif)
+}

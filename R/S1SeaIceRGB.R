@@ -87,16 +87,16 @@
 #' @export
 
 s1_seaice_rgb <- function(co_pol,
-                      cross_pol,
-                      mode        = c("EW", "IW"),
-                      datatype    = c("INT1U", "INT2U", "FLT4S"),
-                      input_in_db = FALSE,
-                      nodata      = NULL,
-                      nodata_tol  = 1e-3,
-                      output_path = NULL) {
+                          cross_pol,
+                          mode        = base::c("EW", "IW"),
+                          datatype    = base::c("INT1U", "INT2U", "FLT4S"),
+                          input_in_db = FALSE,
+                          nodata      = NULL,
+                          nodata_tol  = 1e-3,
+                          output_path = NULL) {
 
-  mode <- match.arg(mode)
-  datatype <- match.arg(datatype)
+  mode <- base::match.arg(mode)
+  datatype <- base::match.arg(datatype)
 
   #--- Input validation --------------------------------------------------------
   if (!base::inherits(co_pol, "SpatRaster")) {
@@ -123,7 +123,7 @@ s1_seaice_rgb <- function(co_pol,
     if (base::length(nd) == 1L && !base::is.na(nd) && !base::is.nan(nd)) {
       terra::classify(
         r,
-        rcl = base::matrix(c(nd - nodata_tol, nd + nodata_tol, NA_real_), nrow = 1L),
+        rcl = base::matrix(base::c(nd - nodata_tol, nd + nodata_tol, NA_real_), nrow = 1L),
         include.lowest = TRUE
       )
     } else {
@@ -164,8 +164,8 @@ s1_seaice_rgb <- function(co_pol,
   green <- .gamma(.stretch(ov,      0.00, 0.06))
   blue  <- .gamma(.stretch(m_co,    0.00, 0.32))
 
-  rgb_stack        <- c(red, green, blue)
-  base::names(rgb_stack) <- c("red", "green", "blue")
+  rgb_stack        <- base::c(red, green, blue)
+  base::names(rgb_stack) <- base::c("red", "green", "blue")
 
   #--- Output scaling ----------------------------------------------------------
   scale_factor <- base::switch(datatype,
@@ -179,7 +179,7 @@ s1_seaice_rgb <- function(co_pol,
     main_dir <- base::file.path(base::getwd(), "IceChaRt_output")
     output_dir <- base::file.path(main_dir, "s1_rgb")
 
-    for (d in c(main_dir, output_dir)) {
+    for (d in base::c(main_dir, output_dir)) {
       if (!base::dir.exists(d)) {
         base::dir.create(d, recursive = TRUE)
         base::message("Created directory: ", d)
