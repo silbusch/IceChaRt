@@ -19,7 +19,7 @@
 #' GeoPackage (`.gpkg`) with a new unique ID column (`ID_NEW`) added as the first column.
 #'
 #' @export
-downloadCISIceChart <- function(target_date = "2020-11-02",
+download_cis_icechart <- function(target_date = "2020-11-02",
                                region     = "Eastern_Arctic",
                                out_dir  = NULL) {
 

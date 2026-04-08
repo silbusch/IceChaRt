@@ -407,7 +407,7 @@ poly_type <- c(
 #'
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
 #' @export
-ReadSIGRID3 <- function(shp,
+read_sigrid3 <- function(shp,
                         polygon_id,
                         id_col = "ID_NEW",
                         save_txt = TRUE,

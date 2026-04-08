@@ -39,7 +39,7 @@
 #'
 #' @export
 
-SeaIceStudyArea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
+seaice_studyarea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
   # Input validation
   if (!inherits(shp, "SpatVector")) {
     stop("'shp' must be a terra::SpatVector object. Load it with terra::vect().", call. = FALSE)

@@ -68,16 +68,16 @@
 #' @examples
 #' \dontrun{
 #' # EW mode (HH / HV), default INT1U output
-#' rgb_ew <- seaIceRGB(co_pol = hh_raster, cross_pol = hv_raster, mode = "EW")
+#' rgb_ew <- s1_seaice_rgb(co_pol = hh_raster, cross_pol = hv_raster, mode = "EW")
 #'
 #' # IW mode (VV / VH), 16-bit output for further processing
-#' rgb_iw <- seaIceRGB(co_pol    = vv_raster,
+#' rgb_iw <- s1_seaice_rgb(co_pol    = vv_raster,
 #'                     cross_pol = vh_raster,
 #'                     mode      = "IW",
 #'                     datatype  = "INT2U")
 #'
 #' # Custom output path, float output
-#' rgb_iw <- seaIceRGB(co_pol      = vv_raster,
+#' rgb_iw <- s1_seaice_rgb(co_pol      = vv_raster,
 #'                     cross_pol   = vh_raster,
 #'                     mode        = "IW",
 #'                     datatype    = "FLT4S",
@@ -86,7 +86,7 @@
 #'
 #' @export
 
-seaIceRGB <- function(co_pol,
+s1_seaice_rgb <- function(co_pol,
                       cross_pol,
                       mode        = c("EW", "IW"),
                       datatype    = c("INT1U", "INT2U", "FLT4S"),
