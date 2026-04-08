@@ -8,8 +8,15 @@ An R package to help you get started with the topic of sea ice.
 Image: Egg Code [[2](#source2)]
 
 ---
-## PAckage Functions
+## Package Functions
 
+| Function             | Description  |Output |
+| :------------------- | :---------- | :---------- |
+| `search_cis_icechart()`  | Searches for weekly ice charts from the Canadian Ice Service for a given region and year.| A list of matching ice charts printed to the user's console. |
+| `download_cis_icechart()`| Downloads an ice chart, adds a new ID column, and saves it as an `sf` object. |An `sf` object containing ice chart polygons and unique IDs.|
+| `seaice_studyarea()`     | Clips an ice-chart `SpatVector` to the extent of a `SpatRaster`, with optional reprojection and land masking.| A cropped `SpatVector` and a land-masked, reprojected `SpatRaster`. |
+| `read_sigrid3()`        | Interprets the SIGRID3 code for a sea-ice polygon. | A text file containing the polygon description.|
+| `s1_seaice_rgb()`       | Creates a false-color sea-ice RGB composite from Sentinel-1 dual-polarization SAR data.| An RGB `SpatRaster`. |
 ---
 ## Example Workflow
 ---
