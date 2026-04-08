@@ -7,9 +7,6 @@
 #'
 #' @param co_pol       A \code{terra::SpatRaster} containing the co-polarized
 #'                     backscatter band. For EW mode: HH. For IW mode: VV.
-#'                     Ignored if \code{mode} is \code{"EW"} or \code{"IW"}
-#'                     and \code{ew_hh}/\code{ew_hv}/\code{iw_vv}/\code{iw_vh}
-#'                     are provided via the named helpers. See Details.
 #' @param cross_pol    A \code{terra::SpatRaster} containing the cross-polarized
 #'                     backscatter band. For EW mode: HV. For IW mode: VH.
 #' @param mode         Character. Acquisition mode: \code{"EW"} (default) or
@@ -17,6 +14,13 @@
 #'                     when \code{output_path} is \code{NULL}; the actual
 #'                     band assignment is always determined by what you pass
 #'                     to \code{co_pol} / \code{cross_pol}.
+#' @param datatype     Character. Output data type for the GeoTIFF. One of
+#'                     \code{"INT1U"} (8-bit unsigned integer, values scaled to
+#'                     0--255, recommended for visualisation),
+#'                     \code{"INT2U"} (16-bit unsigned integer, values scaled to
+#'                     0--10000, recommended for further processing), or
+#'                     \code{"FLT4S"} (32-bit float, values kept at 0--1).
+#'                     Default: \code{"INT1U"}.
 #' @param input_in_db  Logical. If \code{TRUE}, input values are assumed to be
 #'                     in dB and will be converted to linear scale before
 #'                     processing. Default: \code{FALSE}.
@@ -24,9 +28,11 @@
 #'                     value stored in the raster metadata is used.
 #' @param nodata_tol   Numeric. Tolerance for floating-point NoData comparison.
 #'                     Default: \code{1e-3}.
-#' @param output_path  Optional path for saving the output as a GeoTIFF
-#'                     raster. If no \code{.tif} suffix is given, it will be
-#'                     added.
+#' @param output_path  Optional path for saving the output as a GeoTIFF raster.
+#'                     If \code{NULL}, the file is saved to
+#'                     \code{IceChaRt_output/s1_rgb/} in the working directory
+#'                     with an auto-generated name including mode and timestamp.
+#'                     If no \code{.tif} suffix is given, it will be added.
 #'
 #' @return A \code{terra::SpatRaster} with three bands (red, green, blue),
 #'         values scaled to the range 0--1. Returned invisibly.
@@ -51,52 +57,73 @@
 #'   IW            \tab VV              \tab VH                 \cr
 #' }
 #'
+#' Output scaling by datatype:
+#' \tabular{lll}{
+#'   \strong{datatype} \tab \strong{Scale factor} \tab \strong{Value range} \cr
+#'   INT1U             \tab 255                   \tab 0--255               \cr
+#'   INT2U             \tab 10000                 \tab 0--10000             \cr
+#'   FLT4S             \tab 1 (none)              \tab 0--1                 \cr
+#' }
+#'
 #' @examples
 #' \dontrun{
-#' # EW mode (HH / HV)
+#' # EW mode (HH / HV), default INT1U output
 #' rgb_ew <- seaIceRGB(co_pol = hh_raster, cross_pol = hv_raster, mode = "EW")
 #'
-#' # IW mode (VV / VH)
-#' rgb_iw <- seaIceRGB(co_pol = vv_raster, cross_pol = vh_raster, mode = "IW")
+#' # IW mode (VV / VH), 16-bit output for further processing
+#' rgb_iw <- seaIceRGB(co_pol    = vv_raster,
+#'                     cross_pol = vh_raster,
+#'                     mode      = "IW",
+#'                     datatype  = "INT2U")
+#'
+#' # Custom output path, float output
+#' rgb_iw <- seaIceRGB(co_pol      = vv_raster,
+#'                     cross_pol   = vh_raster,
+#'                     mode        = "IW",
+#'                     datatype    = "FLT4S",
+#'                     output_path = "results/my_composite")
 #' }
 #'
 #' @export
+
 seaIceRGB <- function(co_pol,
                       cross_pol,
                       mode        = c("EW", "IW"),
+                      datatype    = c("INT1U", "INT2U", "FLT4S"),
                       input_in_db = FALSE,
                       nodata      = NULL,
                       nodata_tol  = 1e-3,
                       output_path = NULL) {
 
   mode <- match.arg(mode)
+  datatype <- match.arg(datatype)
 
-# Input validation
-  if (!inherits(co_pol, "SpatRaster")) {
-    stop("'co_pol' must be a terra::SpatRaster")
+  #--- Input validation --------------------------------------------------------
+  if (!base::inherits(co_pol, "SpatRaster")) {
+    base::stop("'co_pol' must be a terra::SpatRaster")
   }
-  if (!inherits(cross_pol, "SpatRaster")) {
-    stop("'cross_pol' must be a terra::SpatRaster")
+  if (!base::inherits(cross_pol, "SpatRaster")) {
+    base::stop("'cross_pol' must be a terra::SpatRaster")
   }
   if (terra::nlyr(co_pol) != 1L) {
-    stop("'co_pol' must have exactly one layer")
+    base::stop("'co_pol' must have exactly one layer")
   }
   if (terra::nlyr(cross_pol) != 1L) {
-    stop("'cross_pol' must have exactly one layer")
+    base::stop("'cross_pol' must have exactly one layer")
   }
   if (!terra::compareGeom(co_pol, cross_pol, stopOnError = FALSE)) {
-    stop("'co_pol' and 'cross_pol' must have the same extent, resolution, and CRS")
+    base::stop("'co_pol' and 'cross_pol' must have the same extent, resolution, and CRS")
   }
 
-# NoData masking
-  nodata_co    <- if (!is.null(nodata)) nodata else terra::NAflag(co_pol)
-  nodata_cross <- if (!is.null(nodata)) nodata else terra::NAflag(cross_pol)
+  #--- NoData masking ----------------------------------------------------------
+  nodata_co <- if (!base::is.null(nodata)) nodata else terra::NAflag(co_pol)
+  nodata_cross <- if (!base::is.null(nodata)) nodata else terra::NAflag(cross_pol)
 
   .mask_nodata <- function(r, nd) {
-    if (length(nd) == 1L && !is.na(nd) && !is.nan(nd)) {
+    if (base::length(nd) == 1L && !base::is.na(nd) && !base::is.nan(nd)) {
       terra::classify(
         r,
-        rcl = matrix(c(nd - nodata_tol, nd + nodata_tol, NA_real_), nrow = 1L),
+        rcl = base::matrix(c(nd - nodata_tol, nd + nodata_tol, NA_real_), nrow = 1L),
         include.lowest = TRUE
       )
     } else {
@@ -104,20 +131,20 @@ seaIceRGB <- function(co_pol,
     }
   }
 
-  co_pol    <- .mask_nodata(co_pol,    nodata_co)
+  co_pol <- .mask_nodata(co_pol,    nodata_co)
   cross_pol <- .mask_nodata(cross_pol, nodata_cross)
 
-# dB → linear conversion (optional)
+  #--- dB → linear conversion (optional) ---------------------------------------
   if (input_in_db) {
-    co_pol    <- 10 ^ (co_pol    / 10)
+    co_pol <- 10 ^ (co_pol    / 10)
     cross_pol <- 10 ^ (cross_pol / 10)
   }
 
-# Physical plausibility clamp
-  co_pol    <- terra::ifel(co_pol    < -0.002, NA, co_pol)
+  #--- Physical plausibility clamp ---------------------------------------------
+  co_pol <- terra::ifel(co_pol    < -0.002, NA, co_pol)
   cross_pol <- terra::ifel(cross_pol < -0.002, NA, cross_pol)
 
-# Helper functions
+  #--- Helper functions --------------------------------------------------------
   .stretch <- function(r, vmin, vmax) {
     terra::clamp((r - vmin) / (vmax - vmin), 0, 1)
   }
@@ -126,58 +153,68 @@ seaIceRGB <- function(co_pol,
     terra::clamp(r, 0, 1) ^ (1 / gamma)
   }
 
-# RGB computation (identical for EW and IW — only input bands differ)
+  #--- RGB computation ---------------------------------------------------------
   #   EW: co_pol = HH, cross_pol = HV
   #   IW: co_pol = VV, cross_pol = VH
-  m_cross <- sqrt(cross_pol + 0.002)   # mhv  (EW) / mvh  (IW)
-  m_co    <- sqrt(co_pol    + 0.002)   # mhh  (EW) / mvv  (IW)
-  ov      <- ((1 - 2 * m_co) * m_cross + 2 * m_co) * m_cross  # Overlay blend
+  m_cross <- base::sqrt(cross_pol + 0.002)
+  m_co    <- base::sqrt(co_pol    + 0.002)
+  ov      <- ((1 - 2 * m_co) * m_cross + 2 * m_co) * m_cross
 
   red   <- .gamma(.stretch(m_cross, 0.02, 0.10))
   green <- .gamma(.stretch(ov,      0.00, 0.06))
   blue  <- .gamma(.stretch(m_co,    0.00, 0.32))
 
   rgb_stack        <- c(red, green, blue)
-  names(rgb_stack) <- c("red", "green", "blue")
+  base::names(rgb_stack) <- c("red", "green", "blue")
 
-# Output path handling
-  if (is.null(output_path)) {
-    main_dir   <- file.path(getwd(), "IceChaRt_output")
-    output_dir <- file.path(main_dir, "s1_rgb")
+  #--- Output scaling ----------------------------------------------------------
+  scale_factor <- base::switch(datatype,
+                               INT1U = 255,
+                               INT2U = 10000,
+                               FLT4S = 1
+  )
+
+  #--- Output path handling ----------------------------------------------------
+  if (base::is.null(output_path)) {
+    main_dir <- base::file.path(base::getwd(), "IceChaRt_output")
+    output_dir <- base::file.path(main_dir, "s1_rgb")
 
     for (d in c(main_dir, output_dir)) {
-      if (!dir.exists(d)) {
-        dir.create(d, recursive = TRUE)
-        message("Created directory: ", d)
+      if (!base::dir.exists(d)) {
+        base::dir.create(d, recursive = TRUE)
+        base::message("Created directory: ", d)
       }
     }
 
-    timestamp   <- format(Sys.time(), "%Y%m%d_%H%M%S")
-    filename    <- paste0("sea_ice_rgb_", tolower(mode), "_", timestamp, ".tif")
-    output_path <- file.path(output_dir, filename)
+    timestamp <- base::format(base::Sys.time(), "%Y%m%d_%H%M%S")
+    filename <- base::paste0("sea_ice_rgb_", base::tolower(mode), "_", timestamp, ".tif")
+    output_path <- base::file.path(output_dir, filename)
 
   } else {
-    output_dir <- dirname(output_path)
+    output_dir <- base::dirname(output_path)
 
-    if (!dir.exists(output_dir)) {
-      dir.create(output_dir, recursive = TRUE)
-      message("Created output directory: ", output_dir)
+    if (!base::dir.exists(output_dir)) {
+      base::dir.create(output_dir, recursive = TRUE)
+      base::message("Created output directory: ", output_dir)
     }
 
-    if (!grepl("\\.(tif|tiff)$", output_path, ignore.case = TRUE)) {
-      output_path <- paste0(output_path, ".tif")
+    if (!base::grepl("\\.(tif|tiff)$", output_path, ignore.case = TRUE)) {
+      output_path <- base::paste0(output_path, ".tif")
     }
   }
-# Write output
+
+  #--- Write output ------------------------------------------------------------
   terra::writeRaster(
-    rgb_stack,
+    rgb_stack * scale_factor,
     output_path,
-    filetype  = "GTiff",
-    datatype  = "FLT4S",
+    filetype = "GTiff",
+    datatype = datatype,
     overwrite = TRUE
   )
 
-  message("RGB composite (", mode, " mode) written to: ", output_path)
+  base::message(
+    "RGB composite (", mode, " mode, ", datatype, ") written to: ", output_path
+  )
 
-  invisible(rgb_stack)
+  base::invisible(rgb_stack)
 }
