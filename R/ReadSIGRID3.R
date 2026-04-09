@@ -406,6 +406,18 @@ poly_type <- base::c(
 #'   working directory is used. Ignored when \code{out_path} is provided.
 #'
 #' @return Invisibly returns the description string; output is printed via \code{cat()}.
+#'
+#' @examples
+#' \dontrun{
+#' path <- system.file("extdata", "cis_SGRDREA_20201102T.gpkg", package = "IceChaRt")
+#'ice_chart <- terra::vect(path)
+#'
+#'# Example with just one polygon and prinitng the text only in the console
+#' read_sigrid3(ice_chart, polygon_id=3, save_txt = FALSE)
+#'
+#' # List of polygons and saving the text in a .txt file
+#' read_sigrid3(ice_chart, polygon_id=c(3, 19, 77, 108), save_txt = TRUE)
+#' }
 #' @export
 read_sigrid3 <- function(shp,
                          polygon_id,
