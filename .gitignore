@@ -6,5 +6,5 @@
 .DS_Store
 .quarto
 TestScript.R
-IceChaRt_output
-
+IceChaRt_output/
+dev/
