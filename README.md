@@ -17,6 +17,7 @@ Image: Egg Code [[2](#source2)]
 | `seaice_studyarea()`     | Clips an ice-chart `SpatVector` to the extent of a `SpatRaster`, with optional reprojection and land masking.| A cropped `SpatVector` and a land-masked, reprojected `SpatRaster`. |
 | `read_sigrid3()`        | Interprets the SIGRID3 code for a sea-ice polygon. | A text file containing the polygon description.|
 | `s1_seaice_rgb()`       | Creates a false-color sea-ice RGB composite from Sentinel-1 dual-polarization SAR data.| An RGB `SpatRaster`. |
+| `download_testdata_IceChaRt`| Downloads bigger test data for the IceChaRt package.| `SpatRaster` |
 ---
 ## Example Workflow
 ---
