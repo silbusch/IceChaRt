@@ -2,22 +2,18 @@ Type: Package
 Package: IceChaRt
 Title: An R package to help you get started with the topic of sea ice
 Version: 0.1.0
-Authors@R: person(given = "silbusch",
-                  family = "",
-                  email = "silbusch@protonmail.com",
-                  role = c("aut", "cre"))
+Authors@R: 
+    person("silbusch", , , "silbusch@protonmail.com", role = c("aut", "cre"))
 Description: Download Ice Chart, interpret SIGRID-3 code, and visualize
-    sea ice.
+    sea ice stage.
 License: MIT + file LICENSE
 Imports: 
     httr,
+    piggyback,
     rvest,
-    sf,
     terra,
     tools,
     utils
-Suggests: 
-    piggyback
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.3
