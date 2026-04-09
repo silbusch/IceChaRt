@@ -37,6 +37,25 @@
 #' with a timestamp appended to the filename. If `land_mask = TRUE`, the masked
 #' raster is saved alongside the vector.
 #'
+#' @examples
+#' \dontrun{
+#' # Download the test data
+#'download_testdata_IceChaRt()
+#'
+#'# load raster
+#'co_pol_path    <- system.file("extdata", "s1_20201101_hh.tif", package = "IceChaRt")
+#'cross_pol_path <- system.file("extdata", "s1_20201101_hv.tif", package = "IceChaRt")
+#'
+#'s1_hh    <- terra::rast(co_pol_path)
+#'s1_hv <- terra::rast(cross_pol_path)
+#'
+#'path <- system.file("extdata", "cis_SGRDREA_20201102T.gpkg", package = "IceChaRt")
+#'ice_chart <- terra::vect(path)
+#'
+#'seaice_studyarea(shp = ice_chart, tif = s1_hh)
+#'seaice_studyarea(shp = ice_chart, tif = s1_hv)
+#'
+#' }
 #' @export
 
 seaice_studyarea <- function(shp, tif, save = TRUE, out_path = NULL, out_dir = NULL, land_mask = TRUE, land_col = "POLY_TYPE", land_val= "L") {
