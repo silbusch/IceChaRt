@@ -1,4 +1,4 @@
-# To-Do: merged two lookup tables and need to change the code for this
+# To-Do: need to check codes like 00 for NIC and DMI
 
 # Sea-Ice Polygon Description Utilities  (SIGRID-3 / CIS egg-code format)
 # Reference: https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf
@@ -106,14 +106,23 @@ ice_stage_development <- base::c(
 # Form of ice codes for variable identifiers FA, FB, FC, FP and FS.
 ice_form <- base::c(
   "01" = "Pancake Ice (30 cm - 3 m)",
+  "1" = "Pancake Ice (30 cm - 3 m)",
   "02" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
+  "2" = "Shuga/Small Ice Cake, Brash Ice (< 2 m across)",
   "03" = "Ice Cake (< 20 m across)",
+  "3" = "Ice Cake (< 20 m across)",
   "04" = "Small Floe (20 m - 100 m across)",
+  "4" = "Small Floe (20 m - 100 m across)",
   "05" = "Medium Floe (100 m - 500 m across)",
+  "5" = "Medium Floe (100 m - 500 m across)",
   "06" = "Big Floe (500 m - 2 km across)",
+  "6" = "Big Floe (500 m - 2 km across)",
   "07" = "Vast Floe (2 km - 10 km across)",
+  "7" = "Vast Floe (2 km - 10 km across)",
   "08" = "Giant Floe (> 10 km across)",
+  "8" = "Giant Floe (> 10 km across)",
   "09" = "Fast Ice",
+  "9" = "Fast Ice",
   "10" = "Growlers, Floebergs or Floebiits",
   #"10" = "Icebergs",
   "11" = "Strips and Patches concentrations 1/10",
