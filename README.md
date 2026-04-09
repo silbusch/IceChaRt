@@ -26,7 +26,7 @@ Image: Egg Code [[2](#source2)]
 remotes::install_github("silbusch/IceChaRt")
 library(IceChaRt)
 ```
-### Ice Chart
+### Search Ice Chart
 ```r
 # Search for an ice chart, e.g., from the Canadian Ice Service:
 IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
@@ -37,16 +37,12 @@ IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
 1                 cis_SGRDREA_20191230T1800Z_pl_a.tar
 2                 cis_SGRDREA_20200106T1800Z_pl_a.tar
 3                 cis_SGRDREA_20200113T1800Z_pl_a.tar
-4                 cis_SGRDREA_20200120T1800Z_pl_a.tar
-5                 cis_SGRDREA_20200127T1800Z_pl_a.tar
 [...]
 57                cis_SGRDREA_20201228T1800Z_pl_a.tar
                                                                                                                   url
 1                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20191230T1800Z_pl_a.tar
 2                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200106T1800Z_pl_a.tar
 3                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200113T1800Z_pl_a.tar
-4                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200120T1800Z_pl_a.tar
-5                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200127T1800Z_pl_a.tar
 [...]
 57                https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar
 
@@ -54,10 +50,40 @@ IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
 1  2019-12-30       a     TRUE
 2  2020-01-06       a     TRUE
 3  2020-01-13       a     TRUE
-4  2020-01-20       a     TRUE
-5  2020-01-27       a     TRUE
 [...]
 57 2020-12-28       a     TRUE
+```
+### Download Ice Chart
+```r
+# Download the Ice Chart
+# If you do not specify a destination folder, the IceChaRt_output folder will
+# be created in your working directory.
+
+# The column ID_NEW is alwas is always created, because not all charts have IDs 
+IceChaRt::download_cis_icechart(target_date = "2020-11-02",
+                      region = "Eastern_Arctic",
+                      out_dir  = NULL)
+```
+*Console output:*
+```
+CIS Ice Chart written to: C:/Users/.../IceChaRt_output/icechart_cis/cis_SGRDREA_20201102T1800Z_pl_a_with_new_id.gpkg
+
+Simple feature collection with 432 features and 17 fields
+Geometry type: POLYGON
+Dimension:     XY
+Bounding box:  xmin: -195054.2 ymin: 2723279 xmax: 1970719 ymax: 5186461
+Projected CRS: WGS_1984_Lambert_Conformal_Conic
+First 10 features:
+   ID_NEW        AREA PERIMETER   CT   CA   SA   FA   CB   SB   FB   CC   SC   FC   CN   CD   CF POLY_TYPE
+1       1      317180   2926.12 <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA>         L
+2       2   534223818 296911.74   50   -9   81   99   -9   -9   -9   -9   -9   -9   -9   -9 99-9         I
+3       3   234814486 184996.95   20   -9   81   99   -9   -9   -9   -9   -9   -9   -9   -9 99-9         I
+[...]
+                         geometry
+1  POLYGON ((818442.7 2847359,...
+2  POLYGON ((586088.4 2852757,...
+3  POLYGON ((623515.4 2860186,...
+[...]
 ```
 ---
 ## References
