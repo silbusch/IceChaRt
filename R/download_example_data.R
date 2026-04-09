@@ -12,23 +12,21 @@
 #' \dontrun{
 #' download_testdata_IceChaRt()
 #'
-#' # Directly usable:
+#' # Ready to use:
 #' co_pol    <- terra::rast(system.file("extdata", "s1_20201101_hh.tif", package = "IceChaRt"))
 #' cross_pol <- terra::rast(system.file("extdata", "s1_20201101_hv.tif", package = "IceChaRt"))
-#'
 #' }
 #'
 #' @export
-
 download_testdata_IceChaRt <- function(dest = system.file("extdata", package = "IceChaRt")) {
 
   if (!requireNamespace("piggyback", quietly = TRUE)) {
-    stop("Bitte zuerst installieren: install.packages('piggyback')")
+    stop("Please install: install.packages('piggyback')")
   }
 
-  dir.create(dest, recursive = TRUE, showWarnings = FALSE)
+  base::dir.create(dest, recursive = TRUE, showWarnings = FALSE)
 
-  message("Downloading example data to: ", dest)
+  base::message("Downloading example data to: ", dest)
 
   piggyback::pb_download(
     repo = "silbusch/IceChaRt",
@@ -36,6 +34,6 @@ download_testdata_IceChaRt <- function(dest = system.file("extdata", package = "
     dest = dest
   )
 
-  message("Data saved to: ", dest)
-  invisible(dest)
+  base::message("Data saved to: ", dest)
+  base::invisible(dest)
 }
