@@ -6,8 +6,15 @@
 #' @param region "East_Coast", “Eastern_Arctic”, "Great_Lakes", “Hudson_Bay”, "Western_Arctic"
 #' @param year Choose between "2006" to current year
 #' @return data.frame with dataname, URLs, date and version
+#'
+#'@examples
+#' \dontrun{
+#'
+#'search_cis_icechart(region="Eastern_Arctic", year="2020")
+#' }
+#'
 #' @export
-search_cis_icechart <- function(region = "Eastern_Arctic", year = "2024") {
+search_cis_icechart <- function(region = "Eastern_Arctic", year = "2020") {
 
   valid_regions <- base::c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
 
