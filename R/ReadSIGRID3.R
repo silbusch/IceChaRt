@@ -50,23 +50,23 @@ ice_concentration <- base::c(
   "80" = "8/10",
   "90" = "9/10",
   "92" = "10/10",
-  "91" = "9/10 – 10/10",
-  "89" = "8/10 – 9/10",
-  "81" = "8/10 – 10/10",
-  "79" = "7/10 – 9/10",
-  "78" = "7/10 – 8/10",
-  "68" = "6/10 – 8/10",
-  "67" = "6/10 – 7/10",
-  "57" = "5/10 – 7/10",
-  "56" = "5/10 – 6/10",
-  "46" = "4/10 – 6/10",
-  "45" = "4/10 – 5/10",
-  "35" = "3/10 – 5/10",
-  "34" = "3/10 – 4/10",
-  "24" = "2/10 – 4/10",
-  "23" = "2/10 – 3/10",
-  "13" = "1/10 – 3/10",
-  "12" = "1/10 – 2/10",
+  "91" = "9/10 - 10/10",
+  "89" = "8/10 - 9/10",
+  "81" = "8/10 - 10/10",
+  "79" = "7/10 - 9/10",
+  "78" = "7/10 - 8/10",
+  "68" = "6/10 - 8/10",
+  "67" = "6/10 - 7/10",
+  "57" = "5/10 - 7/10",
+  "56" = "5/10 - 6/10",
+  "46" = "4/10 - 6/10",
+  "45" = "4/10 - 5/10",
+  "35" = "3/10 - 5/10",
+  "34" = "3/10 - 4/10",
+  "24" = "2/10 - 4/10",
+  "23" = "2/10 - 3/10",
+  "13" = "1/10 - 3/10",
+  "12" = "1/10 - 2/10",
   "99" = "Unknown",
   "-9" = "Not set"
 )
@@ -78,7 +78,7 @@ ice_stage_development <- base::c(
   "74" = "New Lake Ice (< 5 cm thickness)",
   "75" = "Thin Lake Ice (5-15 cm thickness)",
   "76" = "Medium Lake Ice (15-30 cm thickness)",
-  "77" = "Thick Lake Ice (30- 70 cm thickness)",
+  "77" = "Thick Lake Ice (30-70 cm thickness)",
   "78" = "Very Thick Lake ice (> 70 cm thickness)",
   "80" = "No Stage of Development",
   "81" = "New ice",
@@ -136,7 +136,7 @@ ice_form <- base::c(
 poly_type <- base::c(
   "L" = "Land",
   "W" = "Water (sea ice free)",
-  "I" = "Ice – of any concentration",
+  "I" = "Ice - of any concentration",
   "N" = "No Data",
   "S" = "Ice Shelf / Ice of Land Origin",
   "-9" = "Not set"
@@ -237,10 +237,10 @@ poly_type <- base::c(
 # CF special case (CIS schema)
 #
 # Priority rules (from the SIGRID-3 / CIS specification):
-#   1. CF == "08-9"  → Fast Ice anywhere in the polygon (immediate return)
+#   1. CF == "08-9"-> Fast Ice anywhere in the polygon (immediate return)
 #   2. FP part is a strips-and-patches code (11-20 / 91)
-#      → strips/patches description + secondary assigned -9 (no secondary)
-#   3. Otherwise     → predominant form + optional secondary form
+#      -> strips/patches description + secondary assigned -9 (no secondary)
+#   3. Otherwise -> predominant form + optional secondary form
 #
 # Format: 4-character string where
 #   characters 1-2 = FP (predominant form code)
