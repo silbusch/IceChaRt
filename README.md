@@ -22,8 +22,42 @@ Image: Egg Code [[2](#source2)]
 ## Example Workflow
 
 ### Install Package
-```
+```r
 remotes::install_github("silbusch/IceChaRt")
+library(IceChaRt)
+```
+### Ice Chart
+Search for an ice chart, e.g., from the Canadian Ice Service:
+```r
+IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
+```
+Console output:
+```
+                                          filename
+1                 cis_SGRDREA_20191230T1800Z_pl_a.tar
+2                 cis_SGRDREA_20200106T1800Z_pl_a.tar
+3                 cis_SGRDREA_20200113T1800Z_pl_a.tar
+4                 cis_SGRDREA_20200120T1800Z_pl_a.tar
+5                 cis_SGRDREA_20200127T1800Z_pl_a.tar
+[...]
+57                cis_SGRDREA_20201228T1800Z_pl_a.tar
+                                                                                                                  url
+1                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20191230T1800Z_pl_a.tar
+2                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200106T1800Z_pl_a.tar
+3                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200113T1800Z_pl_a.tar
+4                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200120T1800Z_pl_a.tar
+5                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200127T1800Z_pl_a.tar
+[...]
+57                https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar
+
+        datum version standard
+1  2019-12-30       a     TRUE
+2  2020-01-06       a     TRUE
+3  2020-01-13       a     TRUE
+4  2020-01-20       a     TRUE
+5  2020-01-27       a     TRUE
+[...]
+57 2020-12-28       a     TRUE
 ```
 ---
 ## References
