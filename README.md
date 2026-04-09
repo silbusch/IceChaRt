@@ -27,11 +27,11 @@ remotes::install_github("silbusch/IceChaRt")
 library(IceChaRt)
 ```
 ### Ice Chart
-Search for an ice chart, e.g., from the Canadian Ice Service:
 ```r
+# Search for an ice chart, e.g., from the Canadian Ice Service:
 IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
 ```
-Console output:
+*Console output:*
 ```
                                           filename
 1                 cis_SGRDREA_20191230T1800Z_pl_a.tar
