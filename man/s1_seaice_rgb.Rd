@@ -8,7 +8,7 @@ s1_seaice_rgb(
   co_pol,
   cross_pol,
   mode = base::c("EW", "IW"),
-  datatype = base::c("INT1U", "INT2U", "FLT4S"),
+  datatype = base::c("INT2U", "INT1U", "FLT4S"),
   input_in_db = FALSE,
   nodata = NULL,
   nodata_tol = 0.001,
