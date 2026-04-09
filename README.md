@@ -8,12 +8,22 @@ An R package to help you get started with the topic of sea ice.
 Image: Egg Code [[2](#source2)]
 
 ---
+## Regions
+<img width="669" height="425" alt="image" src="https://github.com/user-attachments/assets/2a1801ff-01cd-4c39-bbbb-50d1ca3954bd" />
+
+Image: Danish Meteorological Institute (DMI) regions.
+
+<img width="594" height="471" alt="image" src="https://github.com/user-attachments/assets/79d39a9f-92cf-4798-8711-7bae3c489f90" />
+
+Image: Canadian Ice Service (CIS) regions.
+
+---
 ## Package Functions
 
 | Function             | Description  |Output |
 | :------------------- | :---------- | :---------- |
-| `search_cis_icechart()`  | Searches for weekly ice charts from the Canadian Ice Service for a given region and year.| A list of matching ice charts printed to the user's console. |
-| `download_cis_icechart()`| Downloads an ice chart, adds a new ID column, and saves it as an `sf` object. |An `sf` object containing ice chart polygons and unique IDs.|
+| `search_icechart()`  | Searches for weekly ice charts from the CIS, NIC or DMI for a given region and year.| A list of matching ice charts printed to the user's console. |
+| `download_icechart()`| Downloads an ice chart, adds a new ID column, and saves it as an `sf` object. |An `sf` object containing ice chart polygons and unique IDs.|
 | `seaice_studyarea()`     | Clips an ice-chart `SpatVector` to the extent of a `SpatRaster`, with optional reprojection and land masking.| A cropped `SpatVector` and a land-masked, reprojected `SpatRaster`. |
 | `read_sigrid3()`        | Interprets the SIGRID3 code for a sea-ice polygon. | A text file containing the polygon description.|
 | `s1_seaice_rgb()`       | Creates a false-color sea-ice RGB composite from Sentinel-1 dual-polarization SAR data.| An RGB `SpatRaster`. |
@@ -29,7 +39,7 @@ library(IceChaRt)
 ### Search Ice Chart
 ```r
 # Search for an ice chart, e.g., from the Canadian Ice Service:
-IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
+IceChaRt::search_icechart(institution= "CIS", region="Eastern_Arctic", year="2020")
 ```
 *Console output:*
 ```
@@ -60,8 +70,9 @@ IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
 # be created in your working directory.
 
 # The column ID_NEW is alwas is always created, because not all charts have unique polygon IDs 
-IceChaRt::download_cis_icechart(target_date = "2020-11-02",
+IceChaRt::download_icechart(institution= "CIS",
                       region = "Eastern_Arctic",
+                      target_date = "2020-11-02",
                       out_dir  = NULL)
 ```
 *Console output:*
@@ -96,3 +107,7 @@ First 10 features:
 <a name="source3" />
 
 - [3] Raspaud, M., Itkin, M. (2020): SAR-Ice: A Sea Ice RGB Composite. <https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/sar-ice/>
+
+- [4] Danish Meteorological Institute. <https://download.dmi.dk/public/ICESERVICE/>
+
+- [5] Danish Meteorological Institute: Additional information related to data. <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/README_download_dmi_dk.pdf>
