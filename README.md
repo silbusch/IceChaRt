@@ -11,11 +11,12 @@ Image: Egg Code [[2](#source2)]
 ## Regions
 <img width="669" height="425" alt="image" src="https://github.com/user-attachments/assets/2a1801ff-01cd-4c39-bbbb-50d1ca3954bd" />
 
-Image: Danish Meteorological Institute (DMI) regions.
+Image: Danish Meteorological Institute (DMI) regions [[5](#source5)].
+
 
 <img width="594" height="471" alt="image" src="https://github.com/user-attachments/assets/79d39a9f-92cf-4798-8711-7bae3c489f90" />
 
-Image: Canadian Ice Service (CIS) regions.
+Image: Canadian Ice Service (CIS) regions [[6](#source6)].
 
 ---
 ## Package Functions
@@ -109,5 +110,9 @@ First 10 features:
 - [3] Raspaud, M., Itkin, M. (2020): SAR-Ice: A Sea Ice RGB Composite. <https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/sar-ice/>
 
 - [4] Danish Meteorological Institute. <https://download.dmi.dk/public/ICESERVICE/>
+<a name="source5" />
 
 - [5] Danish Meteorological Institute: Additional information related to data. <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/README_download_dmi_dk.pdf>
+<a name="source6" />
+
+- [6] Canadian Ice Service (2026): Latest ice conditions. <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/latest-conditions.html>
