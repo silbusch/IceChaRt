@@ -18,6 +18,13 @@
 #' has already been downloaded, it is loaded from cache. The chart is saved as a
 #' GeoPackage (`.gpkg`) with a new unique ID column (`ID_NEW`) added as the first column.
 #'
+#'@examples
+#' \dontrun{
+#'download_cis_icechart(target_date = "2020-11-02",
+#'                      region = "Eastern_Arctic",
+#'                      out_dir  = NULL)
+#' }
+#'
 #' @export
 download_cis_icechart <- function(target_date = "2020-11-02",
                                   region     = "Eastern_Arctic",
