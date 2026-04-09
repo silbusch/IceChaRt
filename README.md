@@ -59,7 +59,7 @@ IceChaRt::search_cis_icechart(region="Eastern_Arctic", year="2020")
 # If you do not specify a destination folder, the IceChaRt_output folder will
 # be created in your working directory.
 
-# The column ID_NEW is alwas is always created, because not all charts have IDs 
+# The column ID_NEW is alwas is always created, because not all charts have unique polygon IDs 
 IceChaRt::download_cis_icechart(target_date = "2020-11-02",
                       region = "Eastern_Arctic",
                       out_dir  = NULL)
