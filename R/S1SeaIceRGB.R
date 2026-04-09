@@ -67,21 +67,18 @@
 #'
 #' @examples
 #' \dontrun{
+#' # Download the test data
+#' download_testdata_IceChaRt()
+#'
+#' # load raster
+#' co_pol_path    <- system.file("extdata", "s1_20201101_hh.tif", package = "IceChaRt")
+#' cross_pol_path <- system.file("extdata", "s1_20201101_hv.tif", package = "IceChaRt")
+#'
+#' co_pol    <- terra::rast(co_pol_path)
+#' cross_pol <- terra::rast(cross_pol_path)
+#'
 #' # EW mode (HH / HV), default INT1U output
-#' rgb_ew <- s1_seaice_rgb(co_pol = hh_raster, cross_pol = hv_raster, mode = "EW")
-#'
-#' # IW mode (VV / VH), 16-bit output for further processing
-#' rgb_iw <- s1_seaice_rgb(co_pol    = vv_raster,
-#'                     cross_pol = vh_raster,
-#'                     mode      = "IW",
-#'                     datatype  = "INT2U")
-#'
-#' # Custom output path, float output
-#' rgb_iw <- s1_seaice_rgb(co_pol      = vv_raster,
-#'                     cross_pol   = vh_raster,
-#'                     mode        = "IW",
-#'                     datatype    = "FLT4S",
-#'                     output_path = "results/my_composite")
+#' s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
 #' }
 #'
 #' @export
