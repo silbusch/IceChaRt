@@ -7,6 +7,7 @@
 #'
 #' @param shp A `terra::SpatVector` object (e.g. loaded via `terra::vect("path/to/file.shp")`).
 #' @param tif A `terra::SpatRaster` object (e.g. loaded via `terra::rast("path/to/file.tif")`).
+#' @param save If \code{TRUE}, created `SpatVector` and `SpatRaster` will be saved.
 #' @param out_path Optional output path for the cropped vector file (e.g. `"output/study_area.gpkg"`).
 #'   Supported formats: `.shp`, `.gpkg`, `.geojson`, `.json`, `.kml`, `.gml`, `.fgb`.
 #'   If `NULL`, output is saved automatically to `IceChaRt_output/study_area/`.
