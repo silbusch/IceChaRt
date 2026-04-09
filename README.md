@@ -20,6 +20,11 @@ Image: Egg Code [[2](#source2)]
 | `download_testdata_IceChaRt`| Downloads bigger test data for the IceChaRt package.| `SpatRaster` |
 ---
 ## Example Workflow
+
+### Install Package
+```
+remotes::install_github("silbusch/IceChaRt")
+```
 ---
 ## References
 <a name="source1" />
