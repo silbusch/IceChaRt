@@ -5,19 +5,27 @@ An R package to help you get started with the topic of sea ice.
 
 ![EggCode](https://github.com/user-attachments/assets/d2147f3a-56b7-46c2-b228-464724da1461 "EggCode")
 
-Image: Egg Code [[2](#source2)]
+Figure 1: The Egg Code used for SIGRID-3 [[2](#source2)]
 
 ---
 ## Regions
-<img width="669" height="425" alt="image" src="https://github.com/user-attachments/assets/2a1801ff-01cd-4c39-bbbb-50d1ca3954bd" />
+Ice charts are available for download for the following regions:
 
-Image: Danish Meteorological Institute (DMI) regions [[5](#source5)].
+|  |
+| :------------------- |
+|<img width="669" height="425" alt="image" src="https://github.com/user-attachments/assets/2a1801ff-01cd-4c39-bbbb-50d1ca3954bd" />|
+|Figure 2: Ice chart regions of the Danish Meteorological Institute (DMI) [[4](#source4)].|
+|<img width="594" height="471" alt="image" src="https://github.com/user-attachments/assets/79d39a9f-92cf-4798-8711-7bae3c489f90" />|
+|Figure 3: Ice chart regions of the Canadian Ice Service (CIS) [[5](#source5)].|
+|<img width="1650" height="1275" alt="sod_ant_20260403" src="https://github.com/user-attachments/assets/161143d0-e9f8-4510-84dd-4032f669fe02" />|
+|Figure 4: Antarctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
+|<img width="1650" height="1275" alt="sod_arc_20260409" src="https://github.com/user-attachments/assets/aa6bbd1e-2156-40c0-bcad-f6e14483fae2" />|
+|Figure 5: Arctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
 
 
-<img width="594" height="471" alt="image" src="https://github.com/user-attachments/assets/79d39a9f-92cf-4798-8711-7bae3c489f90" />
 
-Image: Canadian Ice Service (CIS) regions [[6](#source6)].
 
+---
 ---
 ## Package Functions
 
@@ -29,6 +37,7 @@ Image: Canadian Ice Service (CIS) regions [[6](#source6)].
 | `read_sigrid3()`        | Interprets the SIGRID3 code for a sea-ice polygon. | A text file containing the polygon description.|
 | `s1_seaice_rgb()`       | Creates a false-color sea-ice RGB composite from Sentinel-1 dual-polarization SAR data.| An RGB `SpatRaster`. |
 | `download_testdata_IceChaRt`| Downloads bigger test data for the IceChaRt package.| `SpatRaster` |
+---
 ---
 ## Example Workflow
 
@@ -93,12 +102,12 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 
 ### Read SIGRID-3 code: `read_sigrid3()`
 ```r
-# Get the interpretation of the sea ice data from each polygon in the SIGRID-3 dataset
-# without needing to know it or understand the Egg Code
+# Get the interpretation of SIGRID-3 code for sea ice data from each polygon 
+# without needing to know it or understand the Egg Code/ SIGRID-3.
 
 ?read_sigrid3()
 
-#Check the sea ice conditions for the polygons you’re interested in:
+# Check the sea ice conditions for the polygons you’re interested in:
 as.data.frame(v)[309:313, ]
 IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
 
@@ -153,13 +162,12 @@ Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_2026
 ```
 ### Study Area: `seaice_studyarea()`
 ```r
-# To create plots easily using satellite data and iceCharts, this function reprojects the raster to the iceChart’s CRS,
-# masks out the land pixels if necessary, and clips the iceChart to the extent of the raster.
+# To create plots easily using satellite data and ice charts, this function reprojects the raster to the ice chart’s CRS,
+# masks out the land pixels if necessary, and clips the iceChart to the bounding box extent of the raster.
 
 ?seaice_studyarea
 
 # In the following example, Sentinel-1 EW data in HH and HV polarisation is fitted to the Ice Chart.
-
 # install.packages(c("curl", "piggyback"))
 library(piggyback)
 library(curl)
@@ -220,10 +228,16 @@ coord. ref. : WGS_1984_Lambert_Conformal_Conic
 source(s)   : memory
 name        : s1_20201101_hh 
 min value   :   1.339771e-05 
-max value   :   4.002907e+00 
+max value   :   4.002907e+00
+[...]
 ```
+
 ### RGB-Color Composite fpr Sentinel-1 EW/IW: `s1_seaice_rgb()`
 ```r
+# Martin Raspaud and Mikhail Itkin have created a color composite using dual-polarized Sentinel-1 data
+# in EW or IW mode that highlights the development stage of sea ice. The following function generates
+# this composite using preprocessed, linear Sentinel-1 TIFF files.
+
 ?s1_seaice_rgb
 
 r_hh <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
@@ -236,7 +250,7 @@ s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
 RGB composite (EW mode, INT2U) written to: C:/Users/.../IceChaRt_output/s1_rgb/sea_ice_rgb_ew_20260410_161754.tif
 ```
 ---
-## Let´s take a look at the data
+## Let´s take a look at the created data
 ```r
 # Please use the code with the data you have created, as the files are saved with a timestamp .
 # Lets take a look at the data before...
@@ -269,18 +283,26 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 ## References
 <a name="source1" />
 
-- [1] World Meteorological Organization (2017): SIGRID-3: A vector archive format for Sea ICe georeferenced information and data. Version 3.1, WMO/TD-No. 1214. <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf>
+- [1] World Meteorological Organization (2017): *SIGRID-3: A vector archive format for Sea ICe georeferenced information and data. Version 3.1, WMO/TD-No. 1214.* <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf>
 <a name="source2" />
 
-- [2] Government of Canada (2017): The Egg Code. <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/publications/interpreting-charts/chapter-1.html>
+- [2] Government of Canada (2017): *The Egg Code.* <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/publications/interpreting-charts/chapter-1.html>
 <a name="source3" />
 
-- [3] Raspaud, M., Itkin, M. (2020): SAR-Ice: A Sea Ice RGB Composite. <https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/sar-ice/>
+- [3] Raspaud, M., Itkin, M. (2020): *SAR-Ice: A Sea Ice RGB Composite.* <https://custom-scripts.sentinel-hub.com/custom-scripts/sentinel-1/sar-ice/>
+<a name="source4" />
 
-- [4] Danish Meteorological Institute. <https://download.dmi.dk/public/ICESERVICE/>
+- [4] Danish Meteorological Institute: *Additional information related to data.* <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/README_download_dmi_dk.pdf>
 <a name="source5" />
 
-- [5] Danish Meteorological Institute: Additional information related to data. <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/README_download_dmi_dk.pdf>
+- [5] Canadian Ice Service (2026): *Latest ice conditions.* <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/latest-conditions.html>
 <a name="source6" />
 
-- [6] Canadian Ice Service (2026): Latest ice conditions. <https://www.canada.ca/en/environment-climate-change/services/ice-forecasts-observations/latest-conditions.html>
+- [6]: U.S. National Ice Center (2026): https://usicecenter.gov/
+
+## Data Source
+- Canadian Ice Service (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G02171/>
+- U.S. National Ice Center (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G10013/>
+- Danish Meteorological Institute (2026): *Ice Charts.* <https://download.dmi.dk/public/ICESERVICE/>
+- European Space Agency (2020): *S1B_EW_GRDM_1SDH_20201101T214550_20201101T214650_024077_02DC57_E104*
+- Canadian Ice Service (2020): cis_SGRDREA_20201102T1800Z_pl_a
