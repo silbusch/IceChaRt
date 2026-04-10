@@ -74,9 +74,9 @@ IceChaRt::download_icechart(institution= "CIS", region = "Eastern_Arctic", date 
 v = terra::vect("IceChaRt_output/ice_charts/CIS_cis_SGRDREA_20201102T1800Z_pl_a.gpkg")
 
 # Plot overall ice concentration:
-terra::plot(v, "CT")
+terra::plot(v, "CT", main="Sea ice concentration| CT-Code")
 # Plot form of ice:
-terra::plot(v, "FA")
+terra::plot(v, "FA", main="Form of ice| FA-Code")
 ```
 *Console output:*
 ```
@@ -86,8 +86,10 @@ Downloading (1/1): cis_SGRDREA_20201102T1800Z_pl_a.tar
   Converting to .gpkg: CIS_cis_SGRDREA_20201102T1800Z_pl_a.gpkg
 Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 ```
-<img width="550" height="544" alt="ice_chart" src="https://github.com/user-attachments/assets/e58d5f75-7652-48bf-9abe-58a3f07149cc" /> 
-<img width="550" height="544" alt="ice_chart_FA" src="https://github.com/user-attachments/assets/94a60585-e0ec-40f4-9c3a-b723ec843fb4" />
+|     |  |
+| :------------------- | :---------- |
+|  ![CT](https://github.com/user-attachments/assets/dfa39cd8-bca9-4a3b-a6b0-8d731f770f98)|![FA](https://github.com/user-attachments/assets/3ee998c9-175a-4128-b8ed-5077ed29381f)|
+
 
 ### Read SIGRID-3 code
 ```r
@@ -111,6 +113,7 @@ IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
 311  1419996891  173514.33   91   20   85   05   40   84   04   40   81   99   97   -9 0499         I    311
 312    68138602   76110.37 <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA>         L    312
 313 13193648654 1191318.05   91   60   85   05   30   84   04   10   81   99   97   -9 0504         I    313
+
 
 > IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
 Polygon 309 covers 2,446.36 km².
