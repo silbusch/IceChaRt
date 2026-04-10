@@ -39,63 +39,114 @@ library(IceChaRt)
 ```
 ### Search Ice Chart
 ```r
-# Search for an ice chart, e.g., from the Canadian Ice Service:
+# Search for an ice chart from the Canadian Ice Service (CIS),  U.S. National Ice Center (NIC) or
+# Danish Meteorological Institute (DMI).
+
+# To find out which regions are available run:
+?search_icechart()
+
+# Example CIS
 IceChaRt::search_icechart(institution= "CIS", region="Eastern_Arctic", year="2020")
 ```
 *Console output:*
 ```
-                                          filename
-1                 cis_SGRDREA_20191230T1800Z_pl_a.tar
-2                 cis_SGRDREA_20200106T1800Z_pl_a.tar
-3                 cis_SGRDREA_20200113T1800Z_pl_a.tar
+                  filename                            url                                                                                                 date          version
+1                 cis_SGRDREA_20191230T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20191230T1800Z_pl_a.tar 2019-12-30       a
+2                 cis_SGRDREA_20200106T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200106T1800Z_pl_a.tar 2020-01-06       a
+3                 cis_SGRDREA_20200113T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200113T1800Z_pl_a.tar 2020-01-13       a
 [...]
-57                cis_SGRDREA_20201228T1800Z_pl_a.tar
-                                                                                                                  url
-1                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20191230T1800Z_pl_a.tar
-2                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200106T1800Z_pl_a.tar
-3                 https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20200113T1800Z_pl_a.tar
-[...]
-57                https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar
-
-        datum version standard
-1  2019-12-30       a     TRUE
-2  2020-01-06       a     TRUE
-3  2020-01-13       a     TRUE
-[...]
-57 2020-12-28       a     TRUE
+57                cis_SGRDREA_20201228T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar 2020-12-28       a
 ```
 ### Download Ice Chart
 ```r
-# Download the Ice Chart
 # If you do not specify a destination folder, the IceChaRt_output folder will
-# be created in your working directory.
+# be created in your working directory. You can download a single chart,
+# a period containing several charts, or an entire year of charts for a specific region.
 
-# The column ID_NEW is alwas is always created, because not all charts have unique polygon IDs 
-IceChaRt::download_icechart(institution= "CIS",
-                      region = "Eastern_Arctic",
-                      target_date = "2020-11-02",
-                      out_dir  = NULL)
+?download_icechart()
+
+# The "ID_NEW" column is always created, as not all charts have unique polygon IDs.
+# Alls Charts will be converted to .gpkg
+
+# Example: Download one specific chart:
+IceChaRt::download_icechart(institution= "CIS", region = "Eastern_Arctic", date = "2020-11-02")
+
+v = terra::vect("IceChaRt_output/ice_charts/CIS_cis_SGRDREA_20201102T1800Z_pl_a.gpkg")
+
+# Plot overall ice concentration:
+terra::plot(v, "CT")
+# Plot form of ice:
+terra::plot(v, "FA")
 ```
 *Console output:*
 ```
-CIS Ice Chart written to: C:/Users/.../IceChaRt_output/icechart_cis/cis_SGRDREA_20201102T1800Z_pl_a_with_new_id.gpkg
+No encoding supplied: defaulting to UTF-8.
+Downloading (1/1): cis_SGRDREA_20201102T1800Z_pl_a.tar
+  |====================================================================================================================| 100%
+  Converting to .gpkg: CIS_cis_SGRDREA_20201102T1800Z_pl_a.gpkg
+Files saved to: C:/Users/.../IceChaRt_output/ice_charts
+```
+<img width="550" height="544" alt="ice_chart" src="https://github.com/user-attachments/assets/e58d5f75-7652-48bf-9abe-58a3f07149cc" /> 
+<img width="550" height="544" alt="ice_chart_FA" src="https://github.com/user-attachments/assets/94a60585-e0ec-40f4-9c3a-b723ec843fb4" />
 
-Simple feature collection with 432 features and 17 fields
-Geometry type: POLYGON
-Dimension:     XY
-Bounding box:  xmin: -195054.2 ymin: 2723279 xmax: 1970719 ymax: 5186461
-Projected CRS: WGS_1984_Lambert_Conformal_Conic
-First 10 features:
-   ID_NEW        AREA PERIMETER   CT   CA   SA   FA   CB   SB   FB   CC   SC   FC   CN   CD   CF POLY_TYPE
-1       1      317180   2926.12 <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA>         L
-2       2   534223818 296911.74   50   -9   81   99   -9   -9   -9   -9   -9   -9   -9   -9 99-9         I
-3       3   234814486 184996.95   20   -9   81   99   -9   -9   -9   -9   -9   -9   -9   -9 99-9         I
-[...]
-                         geometry
-1  POLYGON ((818442.7 2847359,...
-2  POLYGON ((586088.4 2852757,...
-3  POLYGON ((623515.4 2860186,...
-[...]
+### Read SIGRID-3 code
+```r
+# Get the interpretation of the sea ice data from each polygon in the SIGRID-3 dataset
+# without needing to know it or understand the Egg Code
+
+?read_sigrid3()
+
+#Check the sea ice conditions for the polygons you’re interested in:
+as.data.frame(v)[309:313, ]
+IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
+
+#By default, the text displayed in the console is also saved as a .txt file in IceChaRt_output/SIGRID3_text. 
+```
+*Console output:*
+```
+> as.data.frame(v)[309:313, ]
+           AREA  PERIMETER   CT   CA   SA   FA   CB   SB   FB   CC   SC   FC   CN   CD   CF POLY_TYPE ID_NEW
+309  2446363224  447242.55   91   10   85   05   60   84   04   30   81   99   -9   -9 0499         I    309
+310  4547432801  695990.31   91   30   97   06   20   96   06   50   87   05   -9   -9 0506         I    310
+311  1419996891  173514.33   91   20   85   05   40   84   04   40   81   99   97   -9 0499         I    311
+312    68138602   76110.37 <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA>         L    312
+313 13193648654 1191318.05   91   60   85   05   30   84   04   10   81   99   97   -9 0504         I    313
+
+> IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
+Polygon 309 covers 2,446.36 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 1/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 6/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 3/10 in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Small Floe (20 m - 100 m across), Secondary: Undetermined/Unknown
+
+Polygon 310 covers 4,547.43 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 3/10 in the stage of Multi Year Ice in the form of Big Floe (500 m - 2 km across)
+  - 2/10 in the stage of Second Year Ice in the form of Big Floe (500 m - 2 km across)
+  - 5/10 in the stage of Thin First Year Ice (30-70 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Big Floe (500 m - 2 km across)
+
+Polygon 311 covers 1,420.00 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 2/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 4/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 4/10 in the stage of New ice in the form of Undetermined/Unknown
+  - < 1/10: Multi Year Ice
+  Predominant/secondary form: Predominant: Small Floe (20 m - 100 m across), Secondary: Undetermined/Unknown
+
+Polygon 312 only contains: Land.
+
+Polygon 313 covers 13,193.65 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 6/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 3/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 1/10 in the stage of New ice in the form of Undetermined/Unknown
+  - < 1/10: Multi Year Ice
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Small Floe (20 m - 100 m across) 
+
+Created directory: C:/Users/.../IceChaRt_output/SIGRID3_text
+Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_20260410_124728.txt
 ```
 ---
 ## References
