@@ -101,6 +101,13 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 
 
 ### Read SIGRID-3 code: `read_sigrid3()`
+
+The georeferenced version of the following ice chart has been downloaded. In the following, the SIGRID-3 table of EggCodes for the polygons JJ (ID: 309), EE (ID: 310), GG (ID: 311), Land (ID: 312), and X (ID: 313) is read using the function and converted into understandable text. 
+
+![sc_a11_20201102_WIS55](https://github.com/user-attachments/assets/553cb516-f399-4cb9-8b9e-7a67ca97a365)
+
+Figure 6: Regional Ice Analysis eastern Artic, week of the 02. NOV 2020 [[7](#source7)]
+
 ```r
 # Get the interpretation of SIGRID-3 code for sea ice data from each polygon 
 # without needing to know it or understand the Egg Code/ SIGRID-3.
@@ -301,7 +308,9 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 - [6]: U.S. National Ice Center (2026): https://usicecenter.gov/
 
 ## Data Source
-- Canadian Ice Service (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G02171/>
+<a name="source7" />
+
+- [7] Canadian Ice Service (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G02171/>
 - U.S. National Ice Center (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G10013/>
 - Danish Meteorological Institute (2026): *Ice Charts.* <https://download.dmi.dk/public/ICESERVICE/>
 - European Space Agency (2020): *S1B_EW_GRDM_1SDH_20201101T214550_20201101T214650_024077_02DC57_E104*
