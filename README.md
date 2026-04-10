@@ -148,6 +148,122 @@ Polygon 313 covers 13,193.65 km².
 Created directory: C:/Users/.../IceChaRt_output/SIGRID3_text
 Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_20260410_124728.txt
 ```
+### Study Area
+```r
+# To create plots easily using satellite data and iceCharts, this function reprojects the raster to the iceChart’s CRS,
+# masks out the land pixels if necessary, and clips the iceChart to the extent of the raster.
+
+?seaice_studyarea
+
+# In the following example, Sentinel-1 EW data in HH and HV polarisation is fitted to the Ice Chart.
+
+# install.packages(c("curl", "piggyback"))
+library(piggyback)
+library(curl)
+
+# Download the test data
+IceChaRt::download_testdata_IceChaRt()
+
+# load raster
+co_pol_path    <- system.file("extdata", "s1_20201101_hh.tif", package = "IceChaRt")
+cross_pol_path <- system.file("extdata", "s1_20201101_hv.tif", package = "IceChaRt")
+
+s1_hh <- terra::rast(co_pol_path)
+s1_hv <- terra::rast(cross_pol_path)
+
+path <- system.file("extdata", "cis_SGRDREA_20201102T.gpkg", package = "IceChaRt")
+ice_chart <- terra::vect(path)
+
+IceChaRt::seaice_studyarea(shp = ice_chart, tif = s1_hh)
+IceChaRt::seaice_studyarea(shp = ice_chart, tif = s1_hv)
+
+```
+*Console output:*
+```
+> IceChaRt::download_testdata_IceChaRt()
+Downloading example data to: C:/Users/.../IceChaRt/extdata
+ℹ Downloading "s1_20201101_hh.tif"...
+  |====================================================================================================================| 100%
+ℹ Downloading "s1_20201101_hv.tif"...
+  |====================================================================================================================| 100%
+Data saved to: C:/Users/.../IceChaRt/extdata
+
+> seaice_studyarea(shp = ice_chart, tif = s1_hh)
+[...]
+CRS do not match. Reprojecting SpatRaster to the CRS of the SpatVector.
+Applying land mask using 'POLY_TYPE == L'...
+Land mask applied.
+Created directory: C:/Users/.../IceChaRt_output/study_area
+Vector written to: C:/Users.../IceChaRt_output/study_area/clipped_icechart_20260410_153927.gpkg
+Raster written to: C:/Users.../IceChaRt_output/study_area/masked_raster_20260410_153927.tif
+$shp
+ class       : SpatVector 
+ geometry    : polygons 
+ dimensions  : 19, 17  (geometries, attributes)
+ extent      : 634560.3, 900949.7, 4005830, 4260447  (xmin, xmax, ymin, ymax)
+ coord. ref. : WGS_1984_Lambert_Conformal_Conic 
+ names       : ID_NEW      AREA PERIMETER    CT    CA    SA    FA    CB    SB    FB (and 7 more)
+ type        :  <int>     <num>     <num> <chr> <chr> <chr> <chr> <chr> <chr> <chr>             
+ values      :    262 2.376e+09 2.803e+05    80    20    85    05    20    84    04             
+                  271 3.723e+10 1.806e+06    90    60    84    04    30    81    99             
+                  284 2.238e+09 3.294e+05    91    10    85    05    60    84    04             
+
+$tif
+class       : SpatRaster 
+size        : 6402, 6698, 1  (nrow, ncol, nlyr)
+resolution  : 39.77149, 39.77149  (x, y)
+extent      : 634560.3, 900949.7, 4005830, 4260447  (xmin, xmax, ymin, ymax)
+coord. ref. : WGS_1984_Lambert_Conformal_Conic 
+source(s)   : memory
+name        : s1_20201101_hh 
+min value   :   1.339771e-05 
+max value   :   4.002907e+00 
+```
+### RGB-Color Composite fpr Sentinel-1 EW/IW
+```r
+r_hh <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
+r_hv <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
+
+s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
+```
+*Console output:*
+```
+RGB composite (EW mode, INT2U) written to: C:/Users/.../IceChaRt_output/s1_rgb/sea_ice_rgb_ew_20260410_161754.tif
+```
+
+### Let´s take a look at the data
+```r
+# Lets take a look at the data before...
+terra::plot(s1_hh,  col = gray.colors(256, start = 0, end = 1), main="HH-Polarisation")
+terra::plot(s1_hv,  col = gray.colors(256, start = 0, end = 1), main="HV-Polarisation")
+
+# ... and after using the function:
+r_hh <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
+r_hv <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
+terra::plot(r_hh, col = gray.colors(256, start = 0, end = 1), main="HH-Polarisation-Newly projected and applied land mask")
+terra::plot(r_hv , col = gray.colors(256, start = 0, end = 1), main="HV-Polarisation-Newly projected and applied land mask")
+
+# The clipped weekly Ice Chart
+v_cis <- terra::vect("IceChaRt_output/study_area/clipped_icechart_20260410_154430.gpkg")
+terra::plot(v_cis, "CT", main="Ice Chart - CT (Total ice concentration)")
+
+# The RGB Color composite
+rgb <- terra::rast("IceChaRt_output/s1_rgb/sea_ice_rgb_ew_20260410_161754.tif")
+rgb_plot <- terra::clamp(rgb / 10000, 0, 1)
+terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
+
+```
+|                                     |                                                       |
+| :-------------------                                                                 | :----------                                                                                  | 
+|![HH](https://github.com/user-attachments/assets/4875c6ec-61b4-421d-8906-ad79d15240ed)|![HV](https://github.com/user-attachments/assets/44e3e3f4-5c70-470b-b013-2c4731c29f14)        |
+|![HH_new](https://github.com/user-attachments/assets/0d0578ed-0c9a-46a1-94fe-797dab567733)|![HV_new](https://github.com/user-attachments/assets/d57f1247-8e7e-47cb-9dad-0df71125d6fd)|
+|![ice](https://github.com/user-attachments/assets/095409cf-8d07-4339-8272-47ccb1b9e015)|![rgb](https://github.com/user-attachments/assets/074e946b-b472-460e-bbbd-ce829756eb83)|
+
+
+
+
+
+
 ---
 ## References
 <a name="source1" />
