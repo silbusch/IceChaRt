@@ -422,10 +422,10 @@ poly_type <- base::c(
 #'ice_chart <- terra::vect(path)
 #'
 #'# Example with just one polygon and prinitng the text only in the console
-#' read_sigrid3(ice_chart, polygon_id=3, save_txt = FALSE)
+#' IceChaRt::read_sigrid3(ice_chart, polygon_id=3, save_txt = FALSE)
 #'
 #' # List of polygons and saving the text in a .txt file
-#' read_sigrid3(ice_chart, polygon_id=c(3, 19, 77, 108), save_txt = TRUE)
+#' IceChaRt::read_sigrid3(ice_chart, polygon_id = c(309:313), save_txt = TRUE)
 #' }
 #' @export
 read_sigrid3 <- function(shp,
