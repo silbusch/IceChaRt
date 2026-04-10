@@ -324,3 +324,7 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 - Danish Meteorological Institute (2026): *Ice Charts.* <https://download.dmi.dk/public/ICESERVICE/>
 - European Space Agency (2020): *S1B_EW_GRDM_1SDH_20201101T214550_20201101T214650_024077_02DC57_E104*
 - Canadian Ice Service (2020): cis_SGRDREA_20201102T1800Z_pl_a
+
+
+![sea_ice_rgb_ew_20260410_213805](https://github.com/user-attachments/assets/7d03a373-5c06-4743-ae4d-fe0e7b2c195c)
+
