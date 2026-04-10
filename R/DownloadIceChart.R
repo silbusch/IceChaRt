@@ -39,19 +39,19 @@
 #' @examples
 #' \dontrun{
 #' # Exact date
-#' download_icechart(institution = "DMI",
-#'                   region = "CapeFarewell",
-#'                   date = "2024-12-31")
-#'
-#' # Date range
 #' download_icechart(institution = "CIS",
 #'                   region = "Eastern_Arctic",
-#'                   date_from = "2020-06-01",
-#'                   date_to = "2020-08-31")
+#'                   date = "2020-11-02")
+#'
+#' # Date range
+#' download_icechart(institution = "DMI",
+#'                   region = "CentralWest",
+#'                   date_from = "2024-01-01",
+#'                   date_to = "2024-02-28")
 #'
 #' # Full year
 #' download_icechart(institution = "NIC",
-#'                   region = "north",
+#'                   region = "south",
 #'                   year = 2020)
 #' }
 #'
