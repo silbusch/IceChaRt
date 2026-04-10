@@ -8,6 +8,7 @@ An R package to help you get started with the topic of sea ice.
 Figure 1: The Egg Code used for SIGRID-3 [[2](#source2)]
 
 ---
+
 ## Regions
 Ice charts are available for download for the following regions:
 
@@ -21,13 +22,9 @@ Ice charts are available for download for the following regions:
 |Figure 4: Antarctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
 |<img width="1650" height="1275" alt="sod_arc_20260409" src="https://github.com/user-attachments/assets/aa6bbd1e-2156-40c0-bcad-f6e14483fae2" />|
 |Figure 5: Arctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
-
-
-
-
 ---
----
-## Package Functions
+
+# Package Functions
 
 | Function             | Description  |Output |
 | :------------------- | :---------- | :---------- |
@@ -39,14 +36,17 @@ Ice charts are available for download for the following regions:
 | `download_testdata_IceChaRt`| Downloads bigger test data for the IceChaRt package.| `SpatRaster` |
 ---
 ---
-## Example Workflow
 
-### Install Package
+# Example Workflow
+
+## Install Package
 ```r
 remotes::install_github("silbusch/IceChaRt")
 library(IceChaRt)
 ```
-### Search Ice Chart: `search_icechart()`
+---
+
+## Search Ice Chart: `search_icechart()`
 ```r
 # Search for an ice chart from the Canadian Ice Service (CIS),  U.S. National Ice Center (NIC) or
 # Danish Meteorological Institute (DMI).
@@ -66,7 +66,9 @@ IceChaRt::search_icechart(institution= "CIS", region="Eastern_Arctic", year="202
 [...]
 57                cis_SGRDREA_20201228T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar 2020-12-28       a
 ```
-### Download Ice Chart: `download_icechart()`
+---
+
+## Download Ice Chart: `download_icechart()`
 ```r
 # If you do not specify a destination folder, the IceChaRt_output folder will
 # be created in your working directory. You can download a single chart,
@@ -99,8 +101,9 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 | :------------------- | :---------- |
 |  ![CT](https://github.com/user-attachments/assets/dfa39cd8-bca9-4a3b-a6b0-8d731f770f98)|![FA](https://github.com/user-attachments/assets/3ee998c9-175a-4128-b8ed-5077ed29381f)|
 
+---
 
-### Read SIGRID-3 code: `read_sigrid3()`
+## Read SIGRID-3 code: `read_sigrid3()`
 
 The georeferenced version of the following ice chart has been downloaded. In the following, the SIGRID-3 table of EggCodes for the polygons JJ (ID: 309), EE (ID: 310), GG (ID: 311), Land (ID: 312), and X (ID: 313) is read using the function and converted into understandable text. 
 
@@ -167,7 +170,9 @@ Polygon 313 covers 13,193.65 km².
 Created directory: C:/Users/.../IceChaRt_output/SIGRID3_text
 Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_20260410_124728.txt
 ```
-### Study Area: `seaice_studyarea()`
+---
+
+## Study Area: `seaice_studyarea()`
 ```r
 # To create plots easily using satellite data and ice charts, this function reprojects the raster to the ice chart’s CRS,
 # masks out the land pixels if necessary, and clips the iceChart to the bounding box extent of the raster.
@@ -238,8 +243,9 @@ min value   :   1.339771e-05
 max value   :   4.002907e+00
 [...]
 ```
+---
 
-### RGB-Color Composite fpr Sentinel-1 EW/IW: `s1_seaice_rgb()`
+## RGB-Color Composite fpr Sentinel-1 EW/IW: `s1_seaice_rgb()`
 ```r
 # Martin Raspaud and Mikhail Itkin have created a color composite using dual-polarized Sentinel-1 data
 # in EW or IW mode that highlights the development stage of sea ice. The following function generates
@@ -257,7 +263,9 @@ s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
 RGB composite (EW mode, INT2U) written to: C:/Users/.../IceChaRt_output/s1_rgb/sea_ice_rgb_ew_20260410_161754.tif
 ```
 ---
-## Let´s take a look at the created data
+---
+
+# Let´s take a look at the created data
 ```r
 # Please use the code with the data you have created, as the files are saved with a timestamp .
 # Lets take a look at the data before...
@@ -287,7 +295,8 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 |![ice](https://github.com/user-attachments/assets/095409cf-8d07-4339-8272-47ccb1b9e015)|![rgb](https://github.com/user-attachments/assets/074e946b-b472-460e-bbbd-ce829756eb83)|
 
 ---
-## References
+---
+# References
 <a name="source1" />
 
 - [1] World Meteorological Organization (2017): *SIGRID-3: A vector archive format for Sea ICe georeferenced information and data. Version 3.1, WMO/TD-No. 1214.* <https://download.dmi.dk/public/ICESERVICE/2024_download_readme/ETSI6-Doc-3%201%202-SIGRID-3_1_App_A_SIGRID3_rev3-1_v5.pdf>
@@ -306,8 +315,8 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 <a name="source6" />
 
 - [6]: U.S. National Ice Center (2026): https://usicecenter.gov/
-
-## Data Source
+---
+# Data Source
 <a name="source7" />
 
 - [7] Canadian Ice Service (2026): *Ice Charts.* <https://noaadata.apps.nsidc.org/NOAA/G02171/>
