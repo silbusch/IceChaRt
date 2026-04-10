@@ -1,116 +1,325 @@
-#' Download the Ice Chart and load it as an SF object and add unique IDs
+#' Download Ice Chart files
 #'
-#'This function downloads a weekly ice chart from the Canadian Ice Service,
-#'creates a new column containing IDs, and saves the SF object.
+#' Downloads ice chart files from the CIS, NIC, or DMI for a specific region
+#' and time period. Files are automatically converted to GeoPackage (.gpkg)
+#' format and saved to \code{IceChaRt_output/ice_charts/} in the current
+#' working directory. Original files are deleted after conversion.
 #'
-#' @param target_date Date as string in format "YYYY-MM-DD" or as date object
-#' @param region Region (default: "Eastern_Arctic"). Valid options: "East_Coast",
-#'   "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic".
-#' @param out_dir Optional base directory for output. If `NULL`, the current
-#'   working directory is used. Output is always saved to `IceChaRt_output/icechart_cis/`.
+#' @param institution Character. The ice service to download from. One of:
+#'   \itemize{
+#'     \item \code{"CIS"} – Canadian Ice Service. Regions: \code{"East_Coast"},
+#'       \code{"Eastern_Arctic"}, \code{"Great_Lakes"}, \code{"Hudson_Bay"},
+#'       \code{"Western_Arctic"}. Years: 2006 to present.
+#'     \item \code{"NIC"} – U.S. National Ice Center. Regions: \code{"north"},
+#'       \code{"south"} (Antarctic suspended since June 2023).
+#'       Years: 2003 to present.
+#'     \item \code{"DMI"} – Danish Meteorological Institute. Regions (2021+):
+#'       \code{"Qaanaaq"}, \code{"NorthWest"}, \code{"CentralWest"},
+#'       \code{"SouthWest"}, \code{"CapeFarewell"}, \code{"SouthEast"},
+#'       \code{"CentralEast"}, \code{"NorthEast"}, \code{"North"}.
+#'       Regions (before 2021): same plus \code{"NorthAndCentralEast"}.
+#'       Years: 2012 to present.
+#'   }
+#' @param region Character. The geographic region. See \code{institution}
+#'   for valid options.
+#' @param year Numeric or character. The year to download. Required if
+#'   \code{date}, \code{date_from}, and \code{date_to} are all \code{NULL}.
+#' @param date Character. An exact date in \code{"YYYY-MM-DD"} format.
+#'   Cannot be combined with \code{date_from}/\code{date_to}.
+#' @param date_from Character. Start of date range in \code{"YYYY-MM-DD"}
+#'   format. Must be combined with \code{date_to}.
+#' @param date_to Character. End of date range in \code{"YYYY-MM-DD"} format.
+#'   Must be combined with \code{date_from}.
+#' @param dest Character. Base directory for output. Defaults to current
+#'   working directory. Files are saved to \code{dest/IceChaRt_output/ice_charts/}.
 #'
-#' @return An `sf` object with ice chart polygons and unique IDs. The attributes
-#'   `region`, `datum`, and `filename` are attached to the returned object.
+#' @return Invisibly returns a \code{data.frame} with columns \code{id},
+#'   \code{filename}, and \code{path} of all downloaded \code{.gpkg} files.
 #'
-#' @details
-#' If `out_dir` is `NULL`, files are saved to `IceChaRt_output/icechart_cis/`
-#' relative to the current working directory. If the chart for the requested date
-#' has already been downloaded, it is loaded from cache. The chart is saved as a
-#' GeoPackage (`.gpkg`) with a new unique ID column (`ID_NEW`) added as the first column.
-#'
-#'@examples
+#' @examples
 #' \dontrun{
-#'download_cis_icechart(target_date = "2020-11-02",
-#'                      region = "Eastern_Arctic",
-#'                      out_dir  = NULL)
+#' # Exact date
+#' download_icechart(institution = "DMI",
+#'                   region = "CapeFarewell",
+#'                   date = "2024-12-31")
+#'
+#' # Date range
+#' download_icechart(institution = "CIS",
+#'                   region = "Eastern_Arctic",
+#'                   date_from = "2020-06-01",
+#'                   date_to = "2020-08-31")
+#'
+#' # Full year
+#' download_icechart(institution = "NIC",
+#'                   region = "north",
+#'                   year = 2020)
 #' }
 #'
 #' @export
-download_cis_icechart <- function(target_date = "2020-11-02",
-                                  region     = "Eastern_Arctic",
-                                  out_dir  = NULL) {
+download_icechart <- function(institution,
+                              region,
+                              year = NULL,
+                              date = NULL,
+                              date_from = NULL,
+                              date_to = NULL,
+                              dest = base::getwd()) {
 
-  valid_regions <- base::c("East_Coast", "Eastern_Arctic", "Great_Lakes", "Hudson_Bay", "Western_Arctic")
+  institution <- base::toupper(institution)
 
-  if (!region %in% valid_regions) {
+  #--- Validate institution ----------------------------------------------------
+  valid_institutions <- base::c("CIS", "NIC", "DMI")
+  if (!institution %in% valid_institutions) {
     base::stop(
-      "Invalid `region`: '", region, "'.\n",
-      "Valid regions are: ", base::paste(valid_regions, collapse = ", "), "\n",
+      "Invalid `institution`: '", institution, "'.\n",
+      "Valid institutions are: ", base::paste(valid_institutions, collapse = ", "),
       call. = FALSE
     )
   }
 
-
-  target_date <- base::as.Date(target_date)
-  year <- base::format(target_date, "%Y")
-  files <- search_cis_icechart(region, year)
-  match <- files[files$datum == target_date & files$standard, ]
-
-  if (base::nrow(match) == 0) {
-    base::stop("No Chart for ", target_date, " in region '", region, "' found.\n",
-               "Please select one of the alternative date: ",
-               base::paste(files$datum[files$standard], collapse = ", "),
-    )
+  #--- Validate date -----------------------------------------------------------
+  if (!base::is.null(date) && (!base::is.null(date_from) || !base::is.null(date_to))) {
+    base::stop("`date` cannot be combined with `date_from`/`date_to`.", call. = FALSE)
   }
-  # Output directory handling
-  if (base::is.null(out_dir)) {
-    main_dir <- base::file.path(base::getwd(), "IceChaRt_output")
-    output_dir <- base::file.path(main_dir, "icechart_cis")
+  if (!base::is.null(date_from) && base::is.null(date_to) ||
+      base::is.null(date_from) && !base::is.null(date_to)) {
+    base::stop("`date_from` and `date_to` must both be provided.", call. = FALSE)
+  }
+  if (base::is.null(date) && base::is.null(date_from) && base::is.null(year)) {
+    base::stop("Please provide either `date`, `date_from`/`date_to`, or `year`.",
+               call. = FALSE)
+  }
+
+  #--- Get the year from date --------------------------------------------------
+  if (!base::is.null(date)) {
+    year_use <- base::format(base::as.Date(date), "%Y")
+  } else if (!base::is.null(date_from)) {
+    year_use <- base::format(base::as.Date(date_from), "%Y")
   } else {
-    main_dir <- base::file.path(out_dir, "IceChaRt_output")
-    output_dir <- base::file.path(main_dir, "icechart_cis")
+    year_use <- base::as.character(year)
   }
 
-  for (d in base::c(main_dir, output_dir)) {
-    if (!base::dir.exists(d)) {
-      base::dir.create(d, recursive = TRUE)
-      base::message("Created directory: ", d)
+  #--- Start searching ---------------------------------------------------------
+  # calling the search_icechart() function with URLs
+  search_results <- search_icechart(institution = institution,
+                                    region= region,
+                                    year = year_use)
+
+  if (base::nrow(search_results) == 0) {
+    base::message("No charts found for the given parameters.")
+    return(base::invisible(NULL))
+  }
+
+  #--- Filter the date ----------------------------------------------------------
+  if (!base::is.null(date)) {
+    target <- base::as.Date(date)
+    search_results <- search_results[search_results$date == target, ]
+  } else if (!base::is.null(date_from)) {
+    d_from <- base::as.Date(date_from)
+    d_to <- base::as.Date(date_to)
+    search_results <- search_results[
+      search_results$date >= d_from & search_results$date <= d_to, ]
+  }
+
+  if (base::nrow(search_results) == 0) {
+    base::message("No charts found for the specified date(s).")
+    return(base::invisible(NULL))
+  }
+
+  #--- Create subfolder for saving --------------------------------------------
+  out_dir <- base::file.path(dest, "IceChaRt_output", "ice_charts")
+  base::dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+  #---Temporary folder for extracting files ------------------------------------
+  tmp_dir <- base::tempfile(pattern = "IceChaRt_tmp_")
+  base::dir.create(tmp_dir, recursive = TRUE)
+  on.exit(base::unlink(tmp_dir, recursive = TRUE), add = TRUE)
+
+  #--- Downloads by institution ------------------------------------------------
+  if (institution == "CIS") {
+    result <- .download_cis(search_results = search_results,
+                            out_dir = out_dir,
+                            tmp_dir = tmp_dir,
+                            prefix = "CIS")
+  } else if (institution == "NIC") {
+    result <- .download_nic(search_results = search_results,
+                            out_dir = out_dir,
+                            tmp_dir = tmp_dir,
+                            prefix = "NIC")
+  } else if (institution == "DMI") {
+    result <- .download_dmi(search_results = search_results,
+                            out_dir = out_dir,
+                            tmp_dir = tmp_dir,
+                            prefix = "DMI")
+  }
+  base::message("Files saved to: ", out_dir)
+  base::invisible(result)
+}
+
+#--- Transform Shapefile to .gpkg ----------------------------------------------
+.shp_to_gpkg <- function(shp_path, gpkg_path) {
+  v <- terra::vect(shp_path)
+  # create new columns with unique IDs
+  v$ID_NEW <- base::seq_len(terra::nrow(v))
+  terra::writeVector(v, gpkg_path, filetype = "GPKG", overwrite = TRUE)
+}
+
+#--- CIS download --------------------------------------------------------------
+.download_cis <- function(search_results, out_dir, tmp_dir, prefix) {
+  downloaded <- base::list()
+
+  for (i in base::seq_len(base::nrow(search_results))) {
+    url <- search_results$url[i]
+    orig_filename <- search_results$filename[i]
+    tar_path <- base::file.path(tmp_dir, orig_filename)
+
+    base::message("Downloading (", i, "/", base::nrow(search_results), "): ",
+                  orig_filename)
+
+    # Download .tar
+    r <- httr::GET(url,
+                   httr::add_headers(`User-Agent` = "Mozilla/5.0"),
+                   httr::write_disk(tar_path, overwrite = TRUE),
+                   httr::progress())
+
+    if (httr::http_error(r)) {
+      base::warning("Failed to download: ", url, call. = FALSE)
+      next
+    }
+
+    # Extract
+    extract_dir <- base::file.path(tmp_dir, base::sub("\\.tar$", "", orig_filename))
+    base::dir.create(extract_dir, showWarnings = FALSE)
+    utils::untar(tar_path, exdir = extract_dir)
+
+    # finding .shp and convert to .gpkg
+    shp_files <- base::list.files(extract_dir, pattern = "\\.shp$",
+                                  full.names = TRUE, recursive = TRUE)
+
+    for (shp in shp_files) {
+      shp_base <- tools::file_path_sans_ext(base::basename(shp))
+      gpkg_name <- base::paste0(prefix, "_", shp_base, ".gpkg")
+      gpkg_path <- base::file.path(out_dir, gpkg_name)
+
+      base::message("  Converting to .gpkg: ", gpkg_name)
+      .shp_to_gpkg(shp, gpkg_path)
+
+      downloaded[[base::length(downloaded) + 1]] <- base::list(
+        filename = gpkg_name,
+        path     = gpkg_path
+      )
     }
   }
 
-  # Download (or load from cache)
-  row <- match[base::nrow(match), ]
-  destfile <- base::file.path(output_dir, row$filename)
-
-  if (!base::file.exists(destfile)) {
-    base::message("Downloading: ", row$filename)
-    httr::GET(
-      row$url,
-      httr::add_headers(`User-Agent` = "Mozilla/5.0"),
-      httr::write_disk(destfile, overwrite = TRUE),
-      httr::progress()
-    )
-  } else {
-    base::message("Loading from cache: ", destfile)
-  }
-
-  # Unpack archive
-  unzip_dir <- base::file.path(output_dir, "data_unzip", base::format(target_date, "%Y-%m-%d"))
-  if (!base::dir.exists(unzip_dir)) base::dir.create(unzip_dir, recursive = TRUE)
-  utils::untar(destfile, exdir = unzip_dir)
-
-  shp_files <- base::list.files(unzip_dir, pattern = "\\.shp$", full.names = TRUE, recursive = TRUE)
-  if (base::length(shp_files) == 0) {
-    base::stop("No shapefile found in the archive: ", destfile, call. = FALSE)
-  }
-
-  # Load, add unique IDs, reorder columns
-  ice <- sf::st_read(shp_files[1], quiet = TRUE)
-  ice$ID_NEW <- base::seq_len(base::nrow(ice))
-  ice <- ice[, base::c("ID_NEW", base::setdiff(base::names(ice), base::c("ID_NEW", "geometry")), "geometry")]
-
-  # save as gpkg with the new IDs
-  final_gpkg <- base::file.path(
-    output_dir,
-    base::paste0(tools::file_path_sans_ext(base::basename(shp_files[1])), "_with_new_id.gpkg")
+  base::data.frame(
+    id= base::seq_len(base::length(downloaded)),
+    filename = base::sapply(downloaded, `[[`, "filename"),
+    path = base::sapply(downloaded, `[[`, "path"),
+    stringsAsFactors = FALSE
   )
-  sf::st_write(ice, final_gpkg, delete_dsn = TRUE, quiet = TRUE)
-  base::message("CIS Ice Chart written to: ", final_gpkg)
+}
 
-  # attach Metadata as attribute
-  base::attr(ice, "region")   <- region
-  base::attr(ice, "datum")    <- target_date
-  base::attr(ice, "filename") <- row$filename
+#--- NIC download --------------------------------------------------------------
+.download_nic <- function(search_results, out_dir, tmp_dir, prefix) {
+  downloaded <- base::list()
 
-  ice
+  for (i in base::seq_len(base::nrow(search_results))) {
+    url <- search_results$url[i]
+    orig_filename <- search_results$filename[i]
+    zip_path <- base::file.path(tmp_dir, orig_filename)
+
+    base::message("Downloading (", i, "/", base::nrow(search_results), "): ",
+                  orig_filename)
+
+    # Download .zip
+    r <- httr::GET(url,
+                   httr::add_headers(`User-Agent` = "Mozilla/5.0"),
+                   httr::write_disk(zip_path, overwrite = TRUE),
+                   httr::progress())
+
+    if (httr::http_error(r)) {
+      base::warning("Failed to download: ", url, call. = FALSE)
+      next
+    }
+
+    extract_dir <- base::file.path(tmp_dir, base::sub("\\.zip$", "", orig_filename))
+    base::dir.create(extract_dir, showWarnings = FALSE)
+    utils::unzip(zip_path, exdir = extract_dir)
+
+    shp_files <- base::list.files(extract_dir, pattern = "\\.shp$",
+                                  full.names = TRUE, recursive = TRUE)
+
+    for (shp in shp_files) {
+      shp_base <- tools::file_path_sans_ext(base::basename(shp))
+      gpkg_name <- base::paste0(prefix, "_", shp_base, ".gpkg")
+      gpkg_path <- base::file.path(out_dir, gpkg_name)
+
+      base::message("  Converting to .gpkg: ", gpkg_name)
+      .shp_to_gpkg(shp, gpkg_path)
+
+      downloaded[[base::length(downloaded) + 1]] <- base::list(
+        filename = gpkg_name,
+        path     = gpkg_path
+      )
+    }
+  }
+
+  base::data.frame(
+    id = base::seq_len(base::length(downloaded)),
+    filename = base::sapply(downloaded, `[[`, "filename"),
+    path = base::sapply(downloaded, `[[`, "path"),
+    stringsAsFactors = FALSE
+  )
+}
+
+
+#---  DMI download -------------------------------------------------------------
+.download_dmi <- function(search_results, out_dir, tmp_dir, prefix) {
+  extensions <- base::c(".shp", ".shx", ".dbf", ".prj", ".cpg")
+  downloaded <- base::list()
+
+  for (i in base::seq_len(base::nrow(search_results))) {
+    folder_url <- search_results$url[i]
+    folder <- search_results$folder[i]
+    basename <- base::sub("/$", "", folder)
+
+    base::message("Downloading (", i, "/", base::nrow(search_results), "): ",
+                  basename)
+
+    # Download all shapefile components
+    for (ext in extensions) {
+      orig_filename <- base::paste0(basename, ext)
+      url <- base::paste0(folder_url, orig_filename)
+      out_path <- base::file.path(tmp_dir, orig_filename)
+
+      r <- httr::GET(url,
+                     httr::add_headers(`User-Agent` = "Mozilla/5.0"),
+                     httr::write_disk(out_path, overwrite = TRUE))
+
+      if (httr::http_error(r)) {
+        base::warning("Failed to download: ", url, call. = FALSE)
+      }
+    }
+
+    # search .shp in tmp_dir and convert in .gpkg
+    shp_path <- base::file.path(tmp_dir, base::paste0(basename, ".shp"))
+    gpkg_name <- base::paste0(prefix, "_", basename, ".gpkg")
+    gpkg_path <- base::file.path(out_dir, gpkg_name)
+
+    if (base::file.exists(shp_path)) {
+      base::message("  Converting to .gpkg: ", gpkg_name)
+      .shp_to_gpkg(shp_path, gpkg_path)
+
+      downloaded[[base::length(downloaded) + 1]] <- base::list(
+        filename = gpkg_name,
+        path     = gpkg_path
+      )
+    }
+  }
+
+  base::data.frame(
+    id = base::seq_len(base::length(downloaded)),
+    filename = base::sapply(downloaded, `[[`, "filename"),
+    path = base::sapply(downloaded, `[[`, "path"),
+    stringsAsFactors = FALSE
+  )
 }
