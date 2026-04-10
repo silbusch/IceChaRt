@@ -37,7 +37,7 @@ Image: Canadian Ice Service (CIS) regions [[6](#source6)].
 remotes::install_github("silbusch/IceChaRt")
 library(IceChaRt)
 ```
-### Search Ice Chart
+### Search Ice Chart: `search_icechart()`
 ```r
 # Search for an ice chart from the Canadian Ice Service (CIS),  U.S. National Ice Center (NIC) or
 # Danish Meteorological Institute (DMI).
@@ -57,7 +57,7 @@ IceChaRt::search_icechart(institution= "CIS", region="Eastern_Arctic", year="202
 [...]
 57                cis_SGRDREA_20201228T1800Z_pl_a.tar https://noaadata.apps.nsidc.org/NOAA/G02171/Eastern_Arctic/2020/cis_SGRDREA_20201228T1800Z_pl_a.tar 2020-12-28       a
 ```
-### Download Ice Chart
+### Download Ice Chart: `download_icechart()`
 ```r
 # If you do not specify a destination folder, the IceChaRt_output folder will
 # be created in your working directory. You can download a single chart,
@@ -91,7 +91,7 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 |  ![CT](https://github.com/user-attachments/assets/dfa39cd8-bca9-4a3b-a6b0-8d731f770f98)|![FA](https://github.com/user-attachments/assets/3ee998c9-175a-4128-b8ed-5077ed29381f)|
 
 
-### Read SIGRID-3 code
+### Read SIGRID-3 code: `read_sigrid3()`
 ```r
 # Get the interpretation of the sea ice data from each polygon in the SIGRID-3 dataset
 # without needing to know it or understand the Egg Code
@@ -151,7 +151,7 @@ Polygon 313 covers 13,193.65 km².
 Created directory: C:/Users/.../IceChaRt_output/SIGRID3_text
 Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_20260410_124728.txt
 ```
-### Study Area
+### Study Area: `seaice_studyarea()`
 ```r
 # To create plots easily using satellite data and iceCharts, this function reprojects the raster to the iceChart’s CRS,
 # masks out the land pixels if necessary, and clips the iceChart to the extent of the raster.
@@ -222,8 +222,10 @@ name        : s1_20201101_hh
 min value   :   1.339771e-05 
 max value   :   4.002907e+00 
 ```
-### RGB-Color Composite fpr Sentinel-1 EW/IW
+### RGB-Color Composite fpr Sentinel-1 EW/IW: `s1_seaice_rgb()`
 ```r
+?s1_seaice_rgb
+
 r_hh <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
 r_hv <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
 
@@ -233,8 +235,8 @@ s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
 ```
 RGB composite (EW mode, INT2U) written to: C:/Users/.../IceChaRt_output/s1_rgb/sea_ice_rgb_ew_20260410_161754.tif
 ```
-
-### Let´s take a look at the data
+---
+## Let´s take a look at the data
 ```r
 # Please use the code with the data you have created, as the files are saved with a timestamp .
 # Lets take a look at the data before...
