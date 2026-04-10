@@ -72,6 +72,7 @@ IceChaRt::search_icechart(institution= "CIS", region="Eastern_Arctic", year="202
 IceChaRt::download_icechart(institution= "CIS", region = "Eastern_Arctic", date = "2020-11-02")
 
 v = terra::vect("IceChaRt_output/ice_charts/CIS_cis_SGRDREA_20201102T1800Z_pl_a.gpkg")
+
 # Plot overall ice concentration:
 terra::plot(v, "CT")
 # Plot form of ice:
@@ -88,7 +89,65 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 <img width="550" height="544" alt="ice_chart" src="https://github.com/user-attachments/assets/e58d5f75-7652-48bf-9abe-58a3f07149cc" /> 
 <img width="550" height="544" alt="ice_chart_FA" src="https://github.com/user-attachments/assets/94a60585-e0ec-40f4-9c3a-b723ec843fb4" />
 
+### Read SIGRID-3 code
+```r
+# Get the interpretation of the sea ice data from each polygon in the SIGRID-3 dataset
+# without needing to know it or understand the Egg Code
 
+?read_sigrid3()
+
+#Check the sea ice conditions for the polygons you’re interested in:
+as.data.frame(v)[309:313, ]
+IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
+
+#By default, the text displayed in the console is also saved as a .txt file in IceChaRt_output/SIGRID3_text. 
+```
+*Console output:*
+```
+> as.data.frame(v)[309:313, ]
+           AREA  PERIMETER   CT   CA   SA   FA   CB   SB   FB   CC   SC   FC   CN   CD   CF POLY_TYPE ID_NEW
+309  2446363224  447242.55   91   10   85   05   60   84   04   30   81   99   -9   -9 0499         I    309
+310  4547432801  695990.31   91   30   97   06   20   96   06   50   87   05   -9   -9 0506         I    310
+311  1419996891  173514.33   91   20   85   05   40   84   04   40   81   99   97   -9 0499         I    311
+312    68138602   76110.37 <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA> <NA>         L    312
+313 13193648654 1191318.05   91   60   85   05   30   84   04   10   81   99   97   -9 0504         I    313
+
+> IceChaRt::read_sigrid3(v, polygon_id = c(309:313), save_txt = TRUE)
+Polygon 309 covers 2,446.36 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 1/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 6/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 3/10 in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Small Floe (20 m - 100 m across), Secondary: Undetermined/Unknown
+
+Polygon 310 covers 4,547.43 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 3/10 in the stage of Multi Year Ice in the form of Big Floe (500 m - 2 km across)
+  - 2/10 in the stage of Second Year Ice in the form of Big Floe (500 m - 2 km across)
+  - 5/10 in the stage of Thin First Year Ice (30-70 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Big Floe (500 m - 2 km across)
+
+Polygon 311 covers 1,420.00 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 2/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 4/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 4/10 in the stage of New ice in the form of Undetermined/Unknown
+  - < 1/10: Multi Year Ice
+  Predominant/secondary form: Predominant: Small Floe (20 m - 100 m across), Secondary: Undetermined/Unknown
+
+Polygon 312 only contains: Land.
+
+Polygon 313 covers 13,193.65 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 6/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 3/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 1/10 in the stage of New ice in the form of Undetermined/Unknown
+  - < 1/10: Multi Year Ice
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Small Floe (20 m - 100 m across) 
+
+Created directory: C:/Users/.../IceChaRt_output/SIGRID3_text
+Output saved to: C:/Users/.../IceChaRt_output/SIGRID3_text/IceChaRt_SIGRID3_20260410_124728.txt
+```
 ---
 ## References
 <a name="source1" />
