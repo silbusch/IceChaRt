@@ -233,6 +233,7 @@ RGB composite (EW mode, INT2U) written to: C:/Users/.../IceChaRt_output/s1_rgb/s
 
 ### Let´s take a look at the data
 ```r
+# Please use the code with the data you have created, as the files are saved with a timestamp .
 # Lets take a look at the data before...
 terra::plot(s1_hh,  col = gray.colors(256, start = 0, end = 1), main="HH-Polarisation")
 terra::plot(s1_hv,  col = gray.colors(256, start = 0, end = 1), main="HV-Polarisation")
@@ -258,11 +259,6 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 |![HH](https://github.com/user-attachments/assets/4875c6ec-61b4-421d-8906-ad79d15240ed)|![HV](https://github.com/user-attachments/assets/44e3e3f4-5c70-470b-b013-2c4731c29f14)        |
 |![HH_new](https://github.com/user-attachments/assets/0d0578ed-0c9a-46a1-94fe-797dab567733)|![HV_new](https://github.com/user-attachments/assets/d57f1247-8e7e-47cb-9dad-0df71125d6fd)|
 |![ice](https://github.com/user-attachments/assets/095409cf-8d07-4339-8272-47ccb1b9e015)|![rgb](https://github.com/user-attachments/assets/074e946b-b472-460e-bbbd-ce829756eb83)|
-
-
-
-
-
 
 ---
 ## References
