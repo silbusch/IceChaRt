@@ -256,6 +256,7 @@ max value   :   4.002907e+00
 
 ?s1_seaice_rgb
 
+# PLEASE USE YOUR TIMESTAMP
 co_pol <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
 cross_pol <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
 
@@ -297,6 +298,10 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 |![HH_new](https://github.com/user-attachments/assets/0d0578ed-0c9a-46a1-94fe-797dab567733)|![HV_new](https://github.com/user-attachments/assets/d57f1247-8e7e-47cb-9dad-0df71125d6fd)|
 |![ice](https://github.com/user-attachments/assets/095409cf-8d07-4339-8272-47ccb1b9e015)|![rgb](https://github.com/user-attachments/assets/074e946b-b472-460e-bbbd-ce829756eb83)|
 
+
+![sea_ice_rgb_ew_20260410_213805](https://github.com/user-attachments/assets/7d03a373-5c06-4743-ae4d-fe0e7b2c195c)
+Figure 7: Example of whole S1-Scene, created with the `s1_seaice_rgb()` function.
+
 ---
 ---
 # References
@@ -327,7 +332,4 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 - Danish Meteorological Institute (2026): *Ice Charts.* <https://download.dmi.dk/public/ICESERVICE/>
 - European Space Agency (2020): *S1B_EW_GRDM_1SDH_20201101T214550_20201101T214650_024077_02DC57_E104*
 - Canadian Ice Service (2020): cis_SGRDREA_20201102T1800Z_pl_a
-
-
-![sea_ice_rgb_ew_20260410_213805](https://github.com/user-attachments/assets/7d03a373-5c06-4743-ae4d-fe0e7b2c195c)
 
