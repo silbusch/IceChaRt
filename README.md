@@ -41,6 +41,9 @@ Ice charts are available for download for the following regions:
 
 ## Install Package
 ```r
+install.packages("remotes")
+library(remotes
+
 remotes::install_github("silbusch/IceChaRt")
 library(IceChaRt)
 ```
