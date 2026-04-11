@@ -1,7 +1,7 @@
 # IceChaRt
 An R package to help you get started with the topic of sea ice.
 
-**IceChaRt** allows users to search for and download sea ice charts, retrieve standardized vector data in the _Sea Ice GeoReferenced Information and Data_ (SIGRID-3) format, and extract egg code information for sea ice classification [[1](#source1), [2](#source2)]. **IceChaRt** also provides a function for colourising Sentinel-1 EW/IW dual-polarisation SAR images into RGB GeoTIFFs following the sea-ice composite by _Martin Raspaud_ and _Mikhail Itkin_, where co-polarisation (HH or VV) and cross-polarisation (HV or VH) are combined to emphasise different stages of sea-ice development [[3](#source3)].
+**IceChaRt** allows users to search for and download sea ice charts, retrieve standardized vector data in the _Sea Ice GeoReferenced Information and Data_ (SIGRID-3) format, and extract egg code information for sea ice classification, so that the user does not need to know how to interpret the SIGRID-3 code [[1](#source1), [2](#source2)]. **IceChaRt** also provides a function for colourising Sentinel-1 EW/IW dual-polarisation SAR images into RGB GeoTIFFs following the sea-ice composite by _Martin Raspaud_ and _Mikhail Itkin_, where co-polarisation (HH or VV) and cross-polarisation (HV or VH) are combined to emphasise different stages of sea-ice development [[3](#source3)].
 
 ![EggCode](https://github.com/user-attachments/assets/d2147f3a-56b7-46c2-b228-464724da1461 "EggCode")
 
