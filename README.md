@@ -256,8 +256,8 @@ max value   :   4.002907e+00
 
 ?s1_seaice_rgb
 
-r_hh <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
-r_hv <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
+co_pol <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_153927.tif")
+cross_pol <- terra::rast("IceChaRt_output/study_area/masked_raster_20260410_154430.tif")
 
 s1_seaice_rgb(co_pol = co_pol, cross_pol = cross_pol, mode = "EW")
 ```
