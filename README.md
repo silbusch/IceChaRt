@@ -312,7 +312,7 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 |HV-Polarization <img width="743" height="897" alt="image" src="https://github.com/user-attachments/assets/04fb9cbe-3c1c-4431-b098-752f43da5ae3" />|HV-Polarization<img width="723" height="895" alt="image" src="https://github.com/user-attachments/assets/fb3ecfb7-5f9e-4e8a-ae73-6ea002527cf4" />| 
 |Created RGB with `s1_seaice_rgb()`<img width="1897" height="2480" alt="IceChaRt_des" src="https://github.com/user-attachments/assets/dd1f0b7a-dcf4-4a0a-b3a2-65f0b8f2114b" />|Created RGB with `s1_seaice_rgb()`<img width="1897" height="2480" alt="IceChaRt_asc" src="https://github.com/user-attachments/assets/5fbbd31b-48b4-4532-94a5-17b5824adff1" />|
 
-Due to thermal noise, depending on whether the orbit is descending or ascending, the backscatter from the first subswath is excessively strong (light blue colors) and cannot be used for the optical differentiation of sea ice. Please also note that the radar image is a snapshot, while the IceChart displays an averaged weekly condition based on multiple images. 
+Due to thermal noise, depending on whether the orbit is descending or ascending, the backscatter from the first subswath is excessively strong (light blue colors) and cannot be used for the optical differentiation of sea ice. Twelve hours passed between the two scenes, during which the ice drifted southeast. Please also note that the radar image is a snapshot, while the IceChart displays an averaged weekly condition based on multiple images. 
 
 Textfile output, for some of the polygons created with `read_sigrid3()`:
 ```
