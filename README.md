@@ -16,10 +16,13 @@ Ice charts are available for download for the following regions:
 | :------------------- |
 |<img width="669" height="425" alt="image" src="https://github.com/user-attachments/assets/2a1801ff-01cd-4c39-bbbb-50d1ca3954bd" />|
 |Figure 2: Ice chart regions of the Danish Meteorological Institute (DMI) [[4](#source4)].|
+|  |
 |<img width="594" height="471" alt="image" src="https://github.com/user-attachments/assets/79d39a9f-92cf-4798-8711-7bae3c489f90" />|
 |Figure 3: Ice chart regions of the Canadian Ice Service (CIS) [[5](#source5)].|
+|  |
 |<img width="1650" height="1275" alt="sod_ant_20260403" src="https://github.com/user-attachments/assets/161143d0-e9f8-4510-84dd-4032f669fe02" />|
 |Figure 4: Antarctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
+|  |
 |<img width="1650" height="1275" alt="sod_arc_20260409" src="https://github.com/user-attachments/assets/aa6bbd1e-2156-40c0-bcad-f6e14483fae2" />|
 |Figure 5: Arctic example ice chart region of the U.S. National Ice Center (NIC) [[6](#source6)].|
 ---
@@ -298,9 +301,60 @@ terra::plotRGB(rgb_plot, r = 1, g = 2, b = 3, stretch = "lin")
 |![HH_new](https://github.com/user-attachments/assets/0d0578ed-0c9a-46a1-94fe-797dab567733)|![HV_new](https://github.com/user-attachments/assets/d57f1247-8e7e-47cb-9dad-0df71125d6fd)|
 |![ice](https://github.com/user-attachments/assets/095409cf-8d07-4339-8272-47ccb1b9e015)|![rgb](https://github.com/user-attachments/assets/074e946b-b472-460e-bbbd-ce829756eb83)|
 
+---
+---
 
-![sea_ice_rgb_ew_20260410_213805](https://github.com/user-attachments/assets/7d03a373-5c06-4743-ae4d-fe0e7b2c195c)
-Figure 7: Example of whole S1-Scene, created with the `s1_seaice_rgb()` function.
+
+# Bigger Example
+|||
+| :------------------- | :---------- |
+|HH-Polarization <img width="712" height="882" alt="image" src="https://github.com/user-attachments/assets/397b002f-c549-4cdc-8b04-38d024e62a7b" />| HH-Polarization <img width="736" height="891" alt="image" src="https://github.com/user-attachments/assets/295b2054-a4a2-4fad-9255-e473add72e85" />|
+|HV-Polarization <img width="743" height="897" alt="image" src="https://github.com/user-attachments/assets/04fb9cbe-3c1c-4431-b098-752f43da5ae3" />|HV-Polarization<img width="723" height="895" alt="image" src="https://github.com/user-attachments/assets/fb3ecfb7-5f9e-4e8a-ae73-6ea002527cf4" />| 
+|Created RGB with `s1_seaice_rgb()`<img width="1897" height="2480" alt="IceChaRt_des" src="https://github.com/user-attachments/assets/dd1f0b7a-dcf4-4a0a-b3a2-65f0b8f2114b" />|Created RGB with `s1_seaice_rgb()`<img width="1897" height="2480" alt="IceChaRt_asc" src="https://github.com/user-attachments/assets/5fbbd31b-48b4-4532-94a5-17b5824adff1" />|
+
+Due to thermal noise, depending on whether the orbit is descending or ascending, the backscatter from the first subswath is excessively strong (light blue colors) and cannot be used for the optical differentiation of sea ice. Please also note that the radar image is a snapshot, while the IceChart displays an averaged weekly condition based on multiple images. 
+
+Textfile output, for some of the polygons created with `read_sigrid3()`:
+```
+IceChaRt - Sea Ice Polygon Description
+Generated: 2026-04-14 21:31:08
+Polygons:  233, 284, 318, 345, 375
+--------------------------------------------------
+
+Polygon 233 covers 6,199.79 km².
+9/10 of this area is ice-covered, with the following stage distribution:
+  - 2/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 7/10 in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Undetermined/Unknown, Secondary: Small Floe (20 m - 100 m across)
+
+Polygon 284 covers 2,237.72 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 1/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 6/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 3/10 in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Small Floe (20 m - 100 m across), Secondary: Undetermined/Unknown
+
+Polygon 318 covers 10,848.73 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 5/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 3/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - 2/10 in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Small Floe (20 m - 100 m across)
+
+Polygon 345 covers 5,687.82 km².
+9/10 - 10/10 of this area is ice-covered, with the following stage distribution:
+  - 8/10 in the stage of Grey-white ice (15-30 cm thickness) in the form of Medium Floe (100 m - 500 m across)
+  - 2/10 in the stage of Grey ice (10-15 cm thickness) in the form of Small Floe (20 m - 100 m across)
+  - < 1/10: Multi Year Ice
+  Predominant/secondary form: Predominant: Medium Floe (100 m - 500 m across), Secondary: Small Floe (20 m - 100 m across)
+
+Polygon 375 covers 32,183.70 km².
+7/10 of this area is ice-covered, with the following stage distribution:
+  - unknown concentration in the stage of New ice in the form of Undetermined/Unknown
+  Predominant/secondary form: Predominant: Undetermined/Unknown
+
+
+```
 
 ---
 ---
