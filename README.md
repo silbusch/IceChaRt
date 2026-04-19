@@ -111,7 +111,15 @@ Files saved to: C:/Users/.../IceChaRt_output/ice_charts
 
 ## Read SIGRID-3 code: `read_sigrid3()`
 
-The georeferenced version of the following ice chart has been downloaded. In the following, the SIGRID-3 table of EggCodes for the polygons JJ (ID: 309), EE (ID: 310), GG (ID: 311), Land (ID: 312), and X (ID: 313) is read using the function and converted into understandable text. 
+The georeferenced version of the following ice chart has been downloaded. In the following, the SIGRID-3 table of EggCodes for the following polygons:
+
+- JJ (ID: 309
+- EE (ID: 310)
+- GG (ID: 311)
+- Land (ID: 312)
+- X (ID: 313)
+
+is read using the function and converted into understandable text. 
 
 ![sc_a11_20201102_WIS55](https://github.com/user-attachments/assets/553cb516-f399-4cb9-8b9e-7a67ca97a365)
 
